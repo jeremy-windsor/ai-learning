@@ -1,0 +1,370 @@
+# AI Learning Guide — TTS Pronunciation Dictionary
+# Format: raw_term|spoken_replacement
+# Applied as case-sensitive find-and-replace before TTS
+# Longer/more specific terms must come first to avoid partial matches
+
+# === Highest-priority compounds ===
+vLLM/TRT-LLM|V L.L.M. / T.R.T. L.L.M.
+Ollama/llama.cpp|Ollama / llama dot C.P.P.
+OpenAI Agents SDK|Open A.I. Agents S.D.K.
+OpenAI-compatible|Open A.I. compatible
+PydanticAI|Pydantic A.I.
+CrewAI|Crew A.I.
+xAI|x A.I.
+OpenAI|Open A.I.
+AI/LLM|A.I. L.L.M.
+FastAPI|Fast A.P.I.
+APIs|A.P.I.s
+TensorRT-LLM|Tensor R.T. L.L.M.
+vLLM/TensorRT-LLM|V L.L.M. / Tensor R.T. L.L.M.
+MLC-LLM|M.L.C. L.L.M.
+DeepSpeed-MII|DeepSpeed M.I.I.
+DeepSpeed|DeepSpeed
+LLM360|L.L.M. three sixty
+LLM-as-judge|L.L.M. as judge
+LLMs|L.L.M.s
+LLM|L.L.M.
+JSON|Jason
+API|A.P.I.
+AI|A.I.
+# === AI curriculum scanned terms ===
+# Months 1-12 scan. Prefer natural speech where common, spelled initials where needed.
+
+# Core AI/ML acronyms
+ML|M.L.
+LM|L.M.
+NLP|N.L.P.
+RLHF|R.L.H.F.
+RL|R.L.
+SFT|S.F.T.
+DPO|D.P.O.
+PPO|P.P.O.
+KTO|K.T.O.
+PEFT|P.E.F.T.
+MoE|M.O.E.
+Mixture-of-Experts|mixture of experts
+
+# Models / families / companies
+ChatGPT|Chat G.P.T.
+GPT-5|G.P.T. five
+GPT-4o|G.P.T. four oh
+GPT-4|G.P.T. four
+GPT-3|G.P.T. three
+GPT-2|G.P.T. two
+GPT|G.P.T.
+BERT|bert
+DeepSeek-V3|DeepSeek V three
+DeepSeek-R1|DeepSeek R one
+DeepSeek|DeepSeek
+Qwen2.5-0.5B|Qwen two point five, zero point five B
+Qwen/Qwen3-8B-Instruct|Qwen three eight B instruct
+Qwen|Qwen
+Llama-3.2-1B|Llama three point two one B
+LlamaIndex|Llama Index
+OLMo|olmo
+NVIDIA|Nvidia
+AMD|A.M.D.
+Anthropic|Anthropic
+Ollama|Ollama
+ollama|Ollama
+Hugging Face|Hugging Face
+Hugging|Hugging
+
+# Data formats / APIs / web
+YAML|yammel
+REST|rest
+GraphQL|Graph Q.L.
+HTTP|H.T.T.P.
+SDK|S.D.K.
+MCP|M.C.P.
+ADK|A.D.K.
+DBs|databases
+DB|database
+SQL|S.Q.L.
+PostgreSQL|Postgres Q.L.
+Redis|Redis
+GitHub|GitHub
+Streamlit|Streamlit
+React|React
+Next.js|Next dot J.S.
+JavaScript|Java Script
+TypeScript|Type Script
+
+# RAG / retrieval / vector DBs
+Retrieval-Augmented|retrieval augmented
+RAG|R.A.G.
+Qdrant|Q-drant
+Weaviate|wee-vee-ate
+Pinecone|Pinecone
+Elasticsearch|Elastic Search
+pgvector|P.G. vector
+nomic-embed|nomic embed
+top-k|top K
+BPE|B.P.E.
+WordPiece|Word Piece
+SentencePiece|Sentence Piece
+cl100k_base|C L one hundred K base
+o200k_base|O two hundred K base
+im_start|I M start
+im_end|I M end
+vocab_size|vocab size
+
+# Agent/orchestration frameworks
+LangChain|LangChain
+LangGraph|LangGraph
+Google ADK|Google A.D.K.
+KServe|K serve
+BentoML|Bento M.L.
+MLflow|M.L. flow
+Weights & Biases|Weights and Biases
+W&B|Weights and Biases
+wandb|Weights and Biases
+pytest|pie test
+
+# Training / architecture terms
+RNNs|R.N.N.s
+RNN|R.N.N.
+CNNs|C.N.N.s
+SVMs|S.V.M.s
+LSTMs|L.S.T.M.s
+FFN|F.F.N.
+MLP|M.L.P.
+ReLU|ray loo
+SwiGLU|swig loo
+LayerNorm|layer norm
+RMSNorm|R.M.S. norm
+RoPE|rope
+ALiBi|alibi
+GQA|G.Q.A.
+Grouped-Query|grouped query
+Multi-Head|multi head
+Feed-Forward|feed forward
+Decoder-only|decoder only
+decoder-only|decoder only
+next-token|next token
+few-shot|few shot
+cross-entropy|cross entropy
+fine-tuning|fine tuning
+Fine-Tuning|fine tuning
+Fine-tuning|fine tuning
+fine-tune|fine tune
+fine-tunes|fine tunes
+fine-tuned|fine tuned
+LoRA|low rah
+QLoRA|Q low rah
+LoRAX|low rah X
+multi-LoRA|multi low rah
+AdamW|Adam W
+TRL|T.R.L.
+MMLU|M.M.L.U.
+GSM8K|G.S.M. eight K
+HumanEval|Human Eval
+
+# Quantization / model formats
+GGUF|G.G.U.F.
+GPTQ/AWQ|G.P.T.Q. A.W.Q.
+GPTQ|G.P.T.Q.
+AWQ|A.W.Q.
+PTQ|P.T.Q.
+SmoothQuant|Smooth Quant
+INT8|int eight
+INT4|int four
+INT2|int two
+FP32|F.P. thirty two
+FP16|F.P. sixteen
+BF16|B.F. sixteen
+FP8/FP4|F.P. eight, F.P. four
+FP8|F.P. eight
+FP4|F.P. four
+W8A8|W eight A eight
+Q4_K_M|Q four K M
+Q5_K_M|Q five K M
+Q8_0|Q eight zero
+
+# Hardware / compute / serving
+GPU|G.P.U.
+GPUs|G.P.U.s
+CPU|C.P.U.
+TPU|T.P.U.
+TPUs|T.P.U.s
+NPU|N.P.U.
+NPUs|N.P.U.s
+RAM|ram
+VRAM|V ram
+HBM3|H.B.M. three
+HBM|H.B.M.
+GB/s|gigabytes per second
+TB/s|terabytes per second
+GB|gigabytes
+MB|megabytes
+KB|kilobytes
+TB|terabytes
+FLOPS|flops
+FLOPs|flops
+TFLOPS|tera flops
+CUDA|cooda
+cuDNN|coo D.N.N.
+cuBLAS|coo blast
+Python/CUDA|Python Cooda
+ROCm|rock-em
+PCIe|P.C.I. express
+NVLink|N.V. Link
+NVSwitch|N.V. Switch
+NVL72|N.V.L. seventy two
+InfiniBand|InfiniBand
+NCCL|N.C.C.L.
+TensorRT|Tensor R.T.
+vLLM|V L.L.M.
+TGI|T.G.I.
+SGLang|S.G. Lang
+ZeRO-Infinity|zero infinity
+ZeRO-3|zero three
+ZeRO|zero
+FSDP|F.S.D.P.
+DDP|D.D.P.
+TPOT|T.P.O.T.
+TTFT|T.T.F.T.
+SLOs|S.L.O.s
+UX|U.X.
+NIM|N.I.M.
+KV|K.V.
+PagedAttention|Paged Attention
+FlashAttention|Flash Attention
+RadixAttention|Radix Attention
+ExLlamaV2|X Llama V two
+MLX|M.L.X.
+llama.cpp|llama dot C.P.P.
+torch.compile|torch compile
+model_size_in_bytes|model size in bytes
+v1/chat/completions|V one chat completions
+prefix-cache|prefix cache
+tensor-parallel-size|tensor parallel size
+tokens/sec|tokens per second
+tok/s|tokens per second
+multi-GPU|multi G.P.U.
+single-GPU|single G.P.U.
+Multi-GPU|multi G.P.U.
+
+# Cloud / infrastructure
+AWS|A.W.S.
+GCP|G.C.P.
+Azure|Azure
+Docker|Docker
+Kubernetes|Kubernetes
+Terraform|Terraform
+CI/CD|C.I. C.D.
+ETL|E.T.L.
+Airflow|Airflow
+Spark|Spark
+Kafka|Kafka
+Databricks|Data bricks
+Snowflake|Snowflake
+OpenTelemetry|Open Telemetry
+Grafana|Grafana
+Evidently|Evidently
+RunPod|RunPod
+
+# General formatting / symbols
+Hands-On|hands on
+Wrap-Up|wrap up
+End-to-End|end to end
+end-to-end|end to end
+Open-Source|open source
+open-source|open source
+Open-Weight|open weight
+open-weight|open weight
+post-training|post training
+Post-Training|post training
+long-context|long context
+high-dimensional|high dimensional
+high-bandwidth|high bandwidth
+high-level|high level
+per-token|per token
+per-request|per request
+fixed-size|fixed size
+single-stream|single stream
+single-user|single user
+compute-bound|compute bound
+memory-bound|memory bound
+bandwidth-bound|bandwidth bound
+multi-tenant|multi tenant
+hand-written|hand written
+cross-platform|cross platform
+de-facto|de facto
+M-series|M series
+ID|I.D.
+IDs|I.D.s
+e.g|for example
+→|to
+←|from
+↔|bidirectional
+~|approximately
+80%+|eighty percent plus
+80%|eighty percent
+20%|twenty percent
+365-day|three hundred sixty five day
+1-12|one through twelve
+
+# === Second-pass monthly scan additions ===
+PyTorch|Pie Torch
+TensorFlow|Tensor Flow
+TensorRT|Tensor R.T.
+TRT-LLM|T.R.T. L.L.M.
+HF|H.F.
+CLI|C.L.I.
+PDFs|P.D.F.s
+FAQ|F.A.Q.
+PII|P.I.I.
+QPS|Q.P.S.
+ITL|I.T.L.
+OOM|out of memory
+OS|O.S.
+TF|T.F.
+TP|T.P.
+DP|D.P.
+PP|P.P.
+RTX|R.T.X.
+SRAM|S ram
+MHA|M.H.A.
+NaN|nan
+A/B|A B
+US|U.S.
+XOR|X or
+TVM|T.V.M.
+DSPy|D.S. Pie
+BM25|B.M. twenty five
+ImageNet|Image Net
+DeepMind|DeepMind
+AlexNet|AlexNet
+NeMo|Nemo
+EAGLE|eagle
+Megatron-LM|Megatron L.M.
+Colossal-AI|Colossal A.I.
+LLaMA-Factory|Llama Factory
+Llama-3|Llama three
+NVLink-class|N.V. Link class
+nvidia-smi|Nvidia S.M.I.
+docker-compose|Docker Compose
+genai-perf|gen A.I. perf
+num_heads|num heads
+seq_len|sequence length
+all-reduce|all reduce
+reduce-scatter|reduce scatter
+low-rank|low rank
+tensor-core|tensor core
+tensor-parallel|tensor parallel
+internet-scale|internet scale
+self-attention|self attention
+position-dependent|position dependent
+encoder-decoder|encoder decoder
+MoE-based|M.O.E. based
+Multi-Query|multi query
+round-trips|round trips
+speculative-model|speculative model
+prefill/decode|prefill decode
+prefill-decode|prefill decode
+non-linearity|non linearity
+multi-region|multi region
+latency-sensitive|latency sensitive
+self-hosted|self hosted
+cross-encoder|cross encoder
