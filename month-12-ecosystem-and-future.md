@@ -176,6 +176,17 @@ Frontier training runs use gigawatt-hours of electricity. Hyperscalers are buyin
 
 ---
 
+### 🛠️ Build It — Month 12 Capstone Projects
+Pick one or more. These are the projects that show up on real AI engineer job descriptions:
+
+1. **FAQ / Document Q&A bot.** Chunk a folder of PDFs → embed with `bge-large` → store in `pgvector` or Qdrant → FastAPI endpoint that retrieves top-5, reranks with a cross-encoder, generates an answer with citations. Ship it on Streamlit.
+2. **Web research agent.** Tool-calling loop: search (Tavily/Brave API) → fetch → summarize → decide next action. Use **LangGraph** or **PydanticAI**. Cap iteration count and token budget. Trace every step in Langfuse.
+3. **Multi-agent workflow.** Planner agent decomposes a task → worker agents execute → critic agent reviews → return final result. Try **CrewAI** or roll your own with LangGraph.
+4. **MCP server.** Expose your company's internal docs / ticket system / database to Claude Desktop or Cursor via the Model Context Protocol. ~100 lines of Python with `mcp` SDK.
+5. **Eval harness.** For any of the above: golden dataset of 50 cases, automated eval with LLM-as-judge + retrieval metrics (recall@k, MRR). Wire it into CI so every prompt change runs the suite.
+
+**Deliverable:** at least one of these in a public GitHub repo. *This* is what gets you hired.
+
 ### Day 362 — Practice Explanations: "How Does Ollama Work?"
 > "Ollama is a friendly wrapper around llama.cpp, a C++ inference engine. When you run `ollama pull qwen3:8b`, it downloads a quantized GGUF file — the model's weights compressed from 16-bit to 4-bit, plus the tokenizer and chat template. When you chat, llama.cpp loads the model into your GPU's VRAM (with CPU fallback for any layers that don't fit), tokenizes your input, runs it through the transformer layer-by-layer, samples the next token, appends it to the KV cache, and repeats — streaming each token to your terminal as it's produced."
 

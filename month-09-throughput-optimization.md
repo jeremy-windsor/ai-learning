@@ -115,6 +115,14 @@ Modern serving stacks combine all of the above. The result: **vLLM with all bell
 - **Throughput** — tokens/sec (server-wide)
 SLOs typically target TTFT < 1s and TPOT < 50ms for chatbot UX. Reasoning models relax TPOT but care more about total response time.
 
+### 🛠️ Build It — Month 9 Hands-On
+1. On your vLLM server from Month 8, enable **speculative decoding**: `--speculative-model Qwen/Qwen3-0.5B --num-speculative-tokens 5`. Measure TPOT before and after.
+2. Enable **prefix caching** (on by default in vLLM v1). Send 100 requests sharing a 2,000-token system prompt. Measure TTFT for request #1 vs #100. The difference is prefix-cache magic.
+3. Try `--kv-cache-dtype fp8`. Measure max concurrent requests before OOM — should ~double.
+4. Hit the server with mixed traffic (short chat, long RAG, long generation). Plot TTFT and TPOT distributions. You're now reading real serving telemetry.
+
+**Deliverable:** a perf comparison table — baseline vs each optimization, on a workload that mimics your real use case.
+
 ### Day 270 — Recap & "Explain it Back"
 **Quiz yourself:**
 1. Why is the KV cache so big, and what's GQA's role?

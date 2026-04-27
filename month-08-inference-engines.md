@@ -150,6 +150,14 @@ A small "draft" model proposes 4–8 tokens at a time; the big "target" model ve
 ### Day 239 — Tool Calling / JSON Mode
 Modern engines support **constrained generation** — forcing the model's output to match a JSON schema, regex, or grammar. Done via masking the next-token logits at sampling time. Critical for agentic workloads (Month 12). Available in vLLM (`outlines`, `xgrammar`), SGLang, llama.cpp (`grammars`), TGI.
 
+### 🛠️ Build It — Month 8 Hands-On
+1. **Local:** install Ollama, `ollama serve`, `ollama run qwen3:8b`. Hit `http://localhost:11434/v1/chat/completions` with `curl` — confirm the OpenAI-compatible API works.
+2. **Cloud:** rent a single H100 or L40S (RunPod / Vast.ai, ~$2/hr), `pip install vllm`, run `vllm serve Qwen/Qwen3-8B-Instruct`. Same OpenAI API on port 8000.
+3. Point the **same client code** at both endpoints by changing only the `base_url`. That's the OpenAI-API-as-standard pattern.
+4. Bench both with `genai-perf` or `vllm bench serve` at concurrency 1, 8, 32. Watch how Ollama collapses on concurrency while vLLM scales — proof of why you need continuous batching.
+
+**Deliverable:** a script + benchmark table showing throughput vs concurrency for both engines.
+
 ### Day 240 — Recap & "Explain it Back"
 **Quiz yourself:**
 1. What's the difference between prefill and decode, and why does it matter?

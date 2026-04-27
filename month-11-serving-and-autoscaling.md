@@ -154,6 +154,17 @@ Each layer reduces cost and latency further down.
 ### Day 329 — Capacity Planning
 Inputs: expected QPS, prompt length distribution, output length distribution, model choice. Outputs: # of GPUs, # of replicas, headroom for spikes (typically 2×), cost per month. Re-do this every quarter — usage grows fast.
 
+### 🛠️ Build It — Month 11 Hands-On
+Build a small but real serving stack:
+1. **FastAPI gateway** in front of vLLM/Ollama. Add API-key auth, per-key token quotas (Redis counters), request logging.
+2. **Dockerize** it. `docker-compose up` should bring up FastAPI + Redis + Ollama.
+3. Wire **Langfuse** or **Phoenix** for tracing — capture every prompt/response/latency/cost.
+4. Add an **input guardrail** (regex or Llama Guard) and an **output guardrail** (PII scanner).
+5. Load-test with `k6` or `locust` at 1, 10, 100 concurrent users. Find your knee. Set SLOs accordingly.
+6. Bonus: deploy to a single Kubernetes node (`kind` or k3s) with KServe or a simple Deployment + Service.
+
+**Deliverable:** a running compose stack + a perf report + a `README` that any teammate can `docker-compose up`.
+
 ### Day 330 — Recap & "Explain it Back"
 **Quiz yourself:**
 1. Difference between an inference engine and an inference service?
