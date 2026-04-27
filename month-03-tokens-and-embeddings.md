@@ -119,6 +119,15 @@ Even with greedy decoding, GPU non-determinism (parallel reduction order, batchi
 ### Day 89 — Stop Sequences and Special Tokens
 Models have special tokens like `<|im_start|>`, `<|im_end|>`, `<|eot_id|>` that delimit messages, system prompts, tool calls. The **chat template** (Day 122) defines how messages get serialized into tokens. Get this wrong and the model behaves badly.
 
+### 🛠️ Build It — Month 3 Hands-On
+Stop reading, start poking:
+1. `pip install tiktoken` and tokenize the same sentence with `cl100k_base` (GPT-4) and `o200k_base` (GPT-4o). Compare token counts. Try Chinese, code, emoji.
+2. Try the same sentence in Llama 3's tokenizer (`pip install transformers`, `AutoTokenizer.from_pretrained("meta-llama/Meta-Llama-3-8B")`). Notice the differences.
+3. Compute cosine similarity between embeddings of `"king"`, `"queen"`, `"man"`, `"woman"` using `sentence-transformers` (`all-MiniLM-L6-v2`). See the famous analogy emerge.
+4. Write a 20-line script that calls an Ollama or OpenAI endpoint with `temperature=0.0`, `0.7`, `1.5` for the same prompt. Feel the difference.
+
+**Deliverable:** a Jupyter notebook you can show a coworker that demonstrates "what an LLM sees."
+
 ### Day 90 — Recap & "Explain it Back"
 **Quiz yourself:**
 1. What is a token, and why don't models use words or characters directly?

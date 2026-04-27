@@ -130,6 +130,14 @@ Production stacks today routinely mix: BF16 for embeddings, FP8 for matmuls, FP1
 ### Day 209 — How to Verify Quality After Quantizing
 Run a small benchmark suite (MMLU, GSM8K, HumanEval, or your own evals) on both BF16 and quantized versions. Look at score deltas. Spot-check outputs subjectively. *Don't* trust perplexity alone — it can hide capability degradation.
 
+### 🛠️ Build It — Month 7 Hands-On
+1. With Ollama, pull the same model at three quants: `qwen3:8b-q4_K_M`, `qwen3:8b-q5_K_M`, `qwen3:8b-q8_0`. Note the file sizes.
+2. Run identical prompts through each. Use `time` to measure generation speed (tok/s). Use a stronger model as a judge to score quality.
+3. Plot it: x-axis = bits-per-weight, y-axis = quality (and tokens/sec). You've just produced your first quantization tradeoff curve — exactly what real teams use to pick a deployment quant.
+4. Bonus: download the BF16 version from Hugging Face and use `bitsandbytes` to load it in 4-bit on the fly. Compare to the GGUF Q4.
+
+**Deliverable:** a one-page write-up with the curve and a recommended quant for your hardware.
+
 ### Day 210 — Recap & "Explain it Back"
 **Quiz yourself:**
 1. Why does quantization make inference faster?

@@ -143,6 +143,14 @@ Take a strong "teacher" model, generate millions of (prompt, response) pairs, tr
 ### Day 149 — The Future of Alignment
 Active research: **process reward models** (reward each reasoning step, not just the answer), **scalable oversight** (humans supervising models smarter than themselves), **interpretability** (can we read what's in the weights?). Critical for safety as capabilities grow.
 
+### 🛠️ Build It — Month 5 Hands-On
+1. Pick a tiny base model (`Qwen2.5-0.5B` or `Llama-3.2-1B`) and run a **QLoRA** fine-tune on a small dataset (e.g., 1k rows of Alpaca) using **Unsloth** (`pip install unsloth`) — fits on a free Colab T4.
+2. Compare base vs fine-tuned outputs on 10 held-out prompts. Use a stronger model (Claude/GPT-4o) as a **judge** to score them — that's your first eval harness.
+3. Save the LoRA adapter (~50 MB), reload it, run inference. You've now done end-to-end PEFT.
+4. Try **DPO** on a preference dataset (`trl` library, ~50 lines of code).
+
+**Deliverable:** a fine-tuned `.safetensors` LoRA adapter + a side-by-side eval table.
+
 ### Day 150 — Recap & "Explain it Back"
 **Quiz yourself:**
 1. What three stages does RLHF have?
