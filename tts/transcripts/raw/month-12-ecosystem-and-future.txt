@@ -62,7 +62,7 @@ Section: Week 2 — The Open-Weight Ecosystem.
 
 Topic: Day 336 — Qwen (Alibaba).
 
-Strong family across sizes (0.5B → 235B MoE).
+Strong family across sizes (0.6B → 235B MoE in Qwen3; up to 397B MoE in Qwen3.5).
 
 Excellent at coding, math, multilingual (especially Chinese).
 
@@ -70,7 +70,9 @@ Apache 2.0 license — fully usable commercially.
 
 What you're running when you ollama pull qwen3.
 
-Frequent releases — every few months a new generation.
+Frequent releases — Qwen3 (April 2025) → Qwen3.5 family (Feb 2026, native multimodal, 256k+ context) → Qwen3.6-27B / Qwen3.6-Plus (April 2026, dense 27B beating 397B MoE on agentic coding, up to 1M context).
+
+Qwen3-Coder-480B-A35B is the current go-to open-weight coding model.
 
 Topic: Day 337 — DeepSeek.
 
@@ -78,7 +80,9 @@ Quietly built world-class models in China for a fraction of the cost.
 
 DeepSeek-V3 (Dec 2024) — 671B MoE, approximately 37B active, MIT-licensed.
 
-DeepSeek-R1 (Jan 2025) — first open reasoning model competitive with o1.
+DeepSeek-R1 (Jan 2025) — first open reasoning model competitive with o1; R1-0528 (May 2025) refined reasoning traceability.
+
+DeepSeek-V4 (preview April 2026) — Flash (284B) and Pro (1.6T) variants, up to 1M context, "closes the gap" with frontier closed models.
 
 Innovations in training efficiency (MLA attention, FP8 training, careful systems engineering).
 
@@ -238,7 +242,7 @@ The pretraining scaling curve has slowed. New scaling axes: inference-time compu
 
 Topic: Day 358 — The Open vs Closed Race.
 
-By 2026, the gap between top open-weight models (Llama 4, Qwen 3, DeepSeek-V3/R1) and frontier closed models (GPT-5, Claude, Gemini) is small for most tasks — sometimes nonexistent. Closed players hold edges in: bleeding-edge multimodal, frontier reasoning, scale of training, distribution. Whether the gap persists is the question of the next two years.
+By 2026, the gap between top open-weight models (Llama 4, Qwen3.5/3.6, DeepSeek-V3/R1/V4-preview) and frontier closed models (GPT-5, Claude, Gemini) is small for most tasks — sometimes nonexistent. OpenAI itself acknowledged the shift by releasing gpt-oss open-weight models alongside GPT-5. Closed players still hold edges in: bleeding-edge multimodal, frontier reasoning, scale of training, distribution. Whether the gap persists is the question of the next two years.
 
 Topic: Day 359 — Geopolitics of AI.
 

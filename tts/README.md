@@ -1,6 +1,6 @@
 # AI Learning Guide — TTS Preparation
 
-Prepare spoken-word audio from the AI learning curriculum using the same pattern as the ham radio and service provider study guides.
+Prepare spoken-word audio from the AI learning curriculum.
 
 ## Current Decision Point
 
@@ -17,7 +17,7 @@ This folder only prepares:
 
 | Setting | Value |
 |---|---|
-| Engine | Kokoro via Open Speech |
+| Engine | Open Speech |
 | Voice | `will` |
 | Speed | 1.1x target, if supported by the active script |
 | Format | MP3 |
@@ -109,7 +109,7 @@ python3 tts/scripts/chunk-text.py pronounced.txt --max-chars 2000 --output-dir /
 Do **not** run this until Jeremy approves:
 
 ```bash
-python3 ~/.openclaw/skills/voice/scripts/tts-kokoro \
+python3 ~/.codex/skills/openclaw-skills/voice/scripts/tts-open-speech \
   "$(cat /tmp/ai-learning-tts/month-01_001.txt)" \
   --voice will --format mp3 \
   --output /tmp/ai-learning-tts/month-01_001.mp3
