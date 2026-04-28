@@ -1,0 +1,188 @@
+Month 06 — Hardware & Compute (Days 151–180)
+
+Goal of this month: Understand the silicon and the memory that A.I. runs on. By Day 180 you'll know why V ram is the bottleneck, why memory bandwidth (not flops) often matters most for inference, and what each line of Nvidia S.M.I. is telling you.
+
+Section: Week 1 — C.P.U. vs G.P.U. vs T.P.U. vs N.P.U..
+
+Topic: Day 151 — The C.P.U.: Few Cores, Smart, Serial.
+
+A modern C.P.U. has 8–128 cores. Each is sophisticated — branch prediction, large caches, out-of-order execution. Optimized for latency on a single task. Great for spreadsheets, web servers, O.S. work. Terrible at "do this same simple math 10 million times in parallel."
+
+Topic: Day 152 — The G.P.U.: Thousands of Cores, Dumb, Parallel.
+
+An H one hundred has approximately 17,000 cooda cores plus specialized tensor cores. Each core is much weaker than a C.P.U. core — but there are thousands of them, and they all execute the same instruction on different data simultaneously (S.I.M.T. — single instruction, multiple threads). Perfect for matrix multiply, which is what neural networks do.
+
+Topic: Day 153 — Why Matrix Multiplication Is the Workload.
+
+Every layer of a transformer is, fundamentally, a few large matrix multiplies (attention's Q.K., attention's softmax-times-V, the F.F.N.'s two matmuls). Together they account for greater than 90% of compute. Specialize the silicon for matmul → win at A.I.. That's the entire premise of G.P.U.s and T.P.U.s in this era.
+
+Topic: Day 154 — Tensor Cores.
+
+Starting with Nvidia Volta (2017), G.P.U.s added tensor cores — small fixed-function units that do a 4×4 matrix multiply-accumulate in one cycle. An H one hundred has 528 tensor cores delivering approximately 1,000 tera flops in B.F. sixteen — vs approximately 67 tera flops from the regular cooda cores. Tensor cores are why modern training/inference is fast.
+
+Topic: Day 155 — Google T.P.U.s.
+
+Google's custom A.I. chip. Built around a systolic array — a grid of multipliers where data flows through rhythmically. T.P.U.s power Gemini training and Google's internal inference. Comparable to Nvidia in performance but only available via Google Cloud.
+
+Topic: Day 156 — Apple Silicon, A.M.D., and the N.P.U..
+
+Apple M series has a unified memory architecture — C.P.U., G.P.U., and Neural Engine share one big pool of fast ram. This is why MacBooks can run surprisingly large models locally.
+
+A.M.D. M.I. three hundred X competes with H one hundred in raw specs; software (rock-em) is still catching up.
+
+N.P.U.s (Neural Processing Units) in laptops/phones — small, low-power chips for on-device inference (Copilot+ PCs, iPhone Neural Engine).
+
+Topic: Day 157 — The Nvidia Lineup.
+
+A one hundred (2020): 40/80 gigabytes HBM2e, approximately 312 T.F. B.F. sixteen. Workhorse of the G.P.T. three/4 era.
+
+H one hundred (2022): 80 gigabytes H.B.M. three, approximately 1,000 T.F. B.F. sixteen. The gold standard 2023–2025.
+
+H two hundred (2024): same compute, 141 gigabytes HBM3e — more memory matters more than more flops for big L.L.M.s.
+
+B one hundred/B two hundred (Blackwell) (2024–2025): approximately 5× H one hundred perf, F.P. four native support.
+
+G.B. two hundred N.V.L. seventy two: 72 Blackwell G.P.U.s as one giant logical accelerator.
+
+Consumer: R.T.X. 4090 (24 gigabytes), R.T.X. 5090 (32 gigabytes) — mostly used for local inference and small fine tunes.
+
+Section: Week 2 — Memory: The Real Bottleneck.
+
+Topic: Day 158 — V ram vs System ram.
+
+V ram (Video ram, on the G.P.U. package) is what holds model weights, K.V. cache, and activations during compute. System ram is on the motherboard. P.C.I. express between them is approximately 30 gigabytes per second — glacial compared to V ram. Anything spilling out of V ram destroys performance.
+
+Topic: Day 159 — H.B.M.: High-Bandwidth Memory.
+
+G.P.U. V ram today is H.B.M. — D ram stacks mounted directly next to the G.P.U. die via silicon interposer. H one hundred H.B.M. three hits approximately 3.35 terabytes per second of bandwidth. For comparison, top-tier D.D.R. five system ram is approximately 80 gigabytes per second. 40× difference. This is the moat Nvidia / T.S.M.C. / S.K. Hynix protect.
+
+Topic: Day 160 — Memory Bandwidth Is The Inference Bottleneck.
+
+A surprising fact: for single stream L.L.M. inference, you are usually memory-bandwidth bound, not compute bound. Every token generation requires reading the full model weights from V ram. Tokens/sec ≈ memory_bandwidth / model size in bytes. This is why a 70B model in B.F. sixteen (140 gigabytes) maxes out at approximately 24 tokens per second on an H one hundred (3.35 terabytes per second ÷ 140 gigabytes).
+
+Topic: Day 161 — The 70 % Rule of Thumb.
+
+For inference V ram: model size in bytes ≈ 2 × params for F.P. sixteen/B.F. sixteen. Plus 20–50% overhead for K.V. cache, activations, framework overhead. So a 7B B.F. sixteen model needs approximately 14 gigabytes → really approximately 17 gigabytes to be safe. A 4-bit quantized 7B needs approximately 4 gigabytes → approximately 6 gigabytes safe.
+
+Topic: Day 162 — Why Bigger Batches = Better G.P.U. Utilization.
+
+With one user, you read the full weights to produce one token. With 32 users batched together, you read the weights once and produce 32 tokens. Throughput goes up approximately 30×, latency per user stays roughly the same. This is why production servers always batch (Month 9, continuous batching).
+
+Topic: Day 163 — Roofline Model (Conceptual).
+
+Plot performance vs arithmetic intensity (flops per byte read). Two ceilings: peak flops (the "roof") and peak bandwidth × intensity (the "slope"). Workloads either hit the flops roof (compute bound) or the bandwidth slope (memory bound). L.L.M. inference: bandwidth slope. L.L.M. training with big batches: closer to the flops roof.
+
+Topic: Day 164 — Nvidia S.M.I. Decoded.
+
+G.P.U.-Util % — fraction of time any kernel was running. Misleading for memory bound workloads.
+
+Memory-Used / Memory-Total — V ram consumption.
+
+Pwr — current draw vs limit. Throttling is real.
+
+Temp — sustained 85 °C+ throttles clocks.
+
+For real perf insight use nsight-compute, dcgm, or Nvidia S.M.I. dmon.
+
+Section: Week 3 — Interconnect: Beyond a Single G.P.U..
+
+Topic: Day 165 — P.C.I. express.
+
+Standard motherboard interconnect. P.C.I. express Gen4 x16 = approximately 32 gigabytes per second, Gen5 x16 = approximately 64 gigabytes per second. Fine for one G.P.U.. Bottleneck for multi-G.P.U. training where gradients must sync.
+
+Topic: Day 166 — N.V. Link and N.V. Switch.
+
+Nvidia's high bandwidth G.P.U.-to-G.P.U. interconnect. H one hundred N.V. Link = 900 gigabytes per second per G.P.U. pair. N.V. Switch is a chip that lets 8 (or 72, in N.V.L. seventy two) G.P.U.s all talk to each other at N.V. Link speed simultaneously. This is what makes a D.G.X. / H.G.X. server a "single big G.P.U." for tensor parallel inference.
+
+Topic: Day 167 — InfiniBand.
+
+For talking between servers. Mellanox/Nvidia InfiniBand H.D.R. / N.D.R. delivers 200/400 Gbps per port. Frontier training clusters use fat-tree topologies with InfiniBand so any G.P.U. can talk to any other at full speed. Ethernet at 400/800 Gbps (RoCE) is now competitive and used by Meta and others.
+
+Topic: Day 168 — Why Interconnect Limits Cluster Size.
+
+Distributed training requires synchronizing gradients every step. As you add G.P.U.s, communication grows faster than compute. At some point, adding G.P.U.s slows training down — until you redesign the parallelism strategy (Month 10).
+
+Topic: Day 169 — The Cost of a Cluster.
+
+A single H one hundred S.X.M. costs approximately $30k. An 8-G.P.U. H.G.X. server: approximately $300k. Add networking, storage, power, cooling: approximately $400k. A 1,000-G.P.U. cluster: approximately $50–80M. A 100,000-G.P.U. cluster (x A.I. Colossus, Meta's clusters): billions. This is why frontier A.I. is concentrated in a few hands.
+
+Section: Week 4 — The cooda Software Stack.
+
+Topic: Day 170 — cooda: Why Nvidia Wins.
+
+cooda is Nvidia's programming model and ecosystem for G.P.U. compute. Released 2007. Every major M.L. framework targets cooda first. Competitors (A.M.D.'s rock-em, Intel's one A.P.I.) have struggled for years to catch up. The "cooda moat" is software, not silicon.
+
+Topic: Day 171 — coo D.N.N., coo blast, N.C.C.L..
+
+coo blast — optimized matrix-multiply kernels.
+
+coo D.N.N. — optimized deep learning primitives (convolution, attention, normalization).
+
+N.C.C.L. — collective communication (all reduce, broadcast) for multi-G.P.U..
+
+Pie Torch and Tensor Flow call into these. You almost never write cooda directly unless you're optimizing a hot kernel like Flash Attention.
+
+Topic: Day 172 — Pie Torch.
+
+By 2026, Pie Torch is the dominant deep learning framework. Used by Meta, Open A.I., Anthropic, and everyone publishing research. Tensor Flow survives mostly inside Google. Jax is gaining ground for research and Google internal use.
+
+Topic: Day 173 — Compilers: torch compile, X.L.A., M.L.I.R..
+
+Just-in-time compilers that fuse operations and generate optimized G.P.U. kernels. torch compile can give 1.5–3× speedups for free. Tensor R.T. L.L.M. (Month 8) is essentially a heavily-optimized compiler for inference.
+
+Topic: Day 174 — Triton (the Language, Not the Server).
+
+Open A.I.'s Python-like D.S.L. for writing G.P.U. kernels. Used by Flash Attention and many recent perf wins. Easier than raw cooda, nearly as fast. Different from Nvidia Triton Inference Server (Month 11) — confusingly same name.
+
+Topic: Day 175 — Operating Above the Stack.
+
+For 99% of users (you, probably), you call high level A.P.I.s (Hugging Face, V L.L.M., Ollama) and never touch cooda. But knowing what's underneath helps you debug "why is this slow?" — usually the answer is memory bandwidth, not compute.
+
+Section: Week 5 — Practical Sizing.
+
+Topic: Day 176 — Estimating Inference V ram.
+
+Quick formula: V ram ≈ params × bytes_per_param × 1.3 + K.V. cache
+
+7B model in F.P. sixteen: 7e9 × 2 × 1.3 ≈ 18 gigabytes.
+
+7B model in int four: 7e9 × 0.5 × 1.3 ≈ 5 gigabytes.
+
+K.V. cache for 4k context, 32 layers, 4096 hidden: approximately 2 gigabytes.
+
+Add approximately 1 gigabytes for framework overhead. Always benchmark.
+
+Topic: Day 177 — Estimating Training V ram.
+
+Roughly 16–20× inference for full fine tuning with Adam W (weights × 2 + gradients × 2 + optimizer states × 8 + activations). low rah cuts this to approximately 3–5×. Q low rah cuts it further by quantizing the frozen base.
+
+Topic: Day 178 — Choosing a G.P.U. for Your Workload.
+
+Local hobbyist: R.T.X. 4090 (24 gigabytes) — runs 7B–14B comfortably, 30B quantized.
+
+Mac dev: M three / M four Max with 64+ gigabytes unified memory — runs 70B quantized.
+
+Single-server inference: H one hundred 80 gigabytes or H two hundred 141 gigabytes.
+
+Multi-G.P.U. serving: 8× H one hundred with N.V. Link.
+
+Pretraining: stop reading and call your sales rep.
+
+Topic: Day 179 — The Ladder of Capability vs Cost.
+
+Topic: Day 180 — Recap & "Explain it Back".
+
+Quiz yourself:
+
+Why is G.P.U. memory bandwidth more important than flops for single user inference?
+
+What is the difference between V ram and system ram, and why does spilling hurt?
+
+Why is cooda a moat?
+
+What does N.V. Link do that P.C.I. express doesn't?
+
+Estimate the V ram needed to run Llama 3 70B in 4-bit. ( approximately 40 gigabytes + K.V. cache.).
+
+You now know the metal. Next month: how we squeeze big models into small V ram.
+

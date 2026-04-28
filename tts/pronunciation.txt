@@ -329,7 +329,6 @@ MHA|M.H.A.
 NaN|nan
 A/B|A B
 US|U.S.
-XOR|X or
 TVM|T.V.M.
 DSPy|D.S. Pie
 BM25|B.M. twenty five
@@ -368,3 +367,134 @@ multi-region|multi region
 latency-sensitive|latency sensitive
 self-hosted|self hosted
 cross-encoder|cross encoder
+
+# === Transcript QA cleanup additions ===
+GOFAI|go fie
+IF-THEN|if then
+MYCIN|mycin
+XCON|X con
+DEC|D.E.C.
+SGD|S.G.D.
+CNN|C.N.N.
+CNNs|C.N.N.s
+XOR|exclusive or
+H100|H one hundred
+H200|H two hundred
+A100|A one hundred
+B100|B one hundred
+B200|B two hundred
+GB200|G.B. two hundred
+B200/GB200|B two hundred / G.B. two hundred
+H100/B100|H one hundred / B one hundred
+H100/Blackwell|H one hundred / Blackwell
+A100/H100|A one hundred / H one hundred
+A100/H100s|A one hundred / H one hundreds
+A100/H100/B100|A one hundred / H one hundred / B one hundred
+L40S|L forty S
+MI300X|M.I. three hundred X
+MI400|M.I. four hundred
+T4|T four
+T5|T five
+R1|R one
+R1-style|R one style
+Q2|Q two
+Q3|Q three
+Q4|Q four
+Q4_0|Q four zero
+Q5/Q6|Q five / Q six
+Q5_K_S|Q five K S
+Q6_K|Q six K
+Q6|Q six
+Q8|Q eight
+GELU|gelu
+KL|K.L.
+IPO|I.P.O.
+ORPO|O.R.P.O.
+RLAIF|R.L.A.I.F.
+BLEU|blue
+ROUGE|rouge
+MT-Bench|M.T. Bench
+DAN|D.A.N.
+MIT-licensed|M.I.T. licensed
+MLA|M.L.A.
+AI2|A.I. two
+GUI|G.U.I.
+UI|U.I.
+USB|U.S.B.
+VL/Omni|V.L. Omni
+JEPA|J.E.P.A.
+SMIC|S.M.I.C.
+MLST|M.L.S.T.
+MRR|M.R.R.
+CI|C.I.
+CTO|C.T.O.
+MQA|M.Q.A.
+FA-3|F.A. three
+SOTA|state of the art
+GEMM|gem
+QKV|Q.K.V.
+MAX|max
+UC|U.C.
+LMSYS|L.M. Sys
+SKU|S.K.U.
+URL|U.R.L.
+SIMT|S.I.M.T.
+QK|Q.K.
+DRAM|D ram
+DDR5|D.D.R. five
+TSMC|T.S.M.C.
+SK|S.K.
+DGX/HGX|D.G.X. / H.G.X.
+HDR/NDR|H.D.R. / N.D.R.
+SXM|S.X.M.
+HGX|H.G.X.
+JAX|Jax
+XLA|X.L.A.
+MLIR|M.L.I.R.
+DSL|D.S.L.
+M3/M4|M three / M four
+C4|C four
+PFLOP-days|peta flop days
+H100-days|H one hundred days
+PFLOP/s|peta flops per second
+LR|L.R.
+ANN|A.N.N.
+HNSW|H.N.S.W.
+BLOOM|Bloom
+MPT|M.P.T.
+L6-v2|L six V two
+EP|E.P.
+SP|S.P.
+ECMP-aware|E.C.M.P. aware
+SDC|S.D.C.
+SRE/HPC|S.R.E. / H.P.C.
+E4M3|E four M three
+E5M2|E five M two
+NVFP4|N.V.F.P. four
+MXFP4|M.X.F.P. four
+QAT|Q.A.T.
+RTN|R.T.N.
+GGML|G.G.M.L.
+EXL2|E.X.L. two
+NF4|N.F. four
+W4A16|W four A sixteen
+INT3|int three
+PC|P.C.
+DX|D.X.
+SLO|S.L.O.
+P99|P ninety nine
+P50|P fifty
+GC|G.C.
+GKE|G.K.E.
+MIG|M.I.G.
+MPS|M.P.S.
+CDN|C.D.N.
+OpenLLMetry|Open L.L.M.etry
+WebGPU|Web G.P.U.
+oneAPI|one A.P.I.
+EleutherAI|Eleuther A.I.
+800GB|eight hundred gigabytes
+IF|if
+AND|and
+THEN|then
+README|read me

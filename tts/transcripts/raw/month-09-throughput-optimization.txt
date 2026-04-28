@@ -1,0 +1,173 @@
+Month 09 — Throughput Optimization (Days 241–270)
+
+Goal of this month: Understand the specific tricks that make modern inference 10–100× faster than naïve PyTorch. By Day 270 you'll know what every flag in vllm serve --help actually does.
+
+Section: Week 1 — The KV Cache In Depth.
+
+Topic: Day 241 — Why the KV Cache Exists.
+
+At decode step t, attention needs the K and V vectors of all previous tokens 1.t-1 plus the new token. Recomputing K,V for all past tokens every step would be O(t) work per token — a 1000-token response would do 500,000 redundant computations. Cache them once, reuse forever (within the request).
+
+Topic: Day 242 — KV Cache Size: The Real Memory Hog.
+
+Per layer, per token: 2 (K and V) × num_heads × head_dim × bytes_per_element. Total: × num_layers × seq_len × batch_size. For Llama-3-70B (80 layers, 8 KV heads, 128 head dim, BF16): about 320 KB per token. A 32k-context request = approximately 10 GB. A batch of 32 such requests = 320 GB — more than 4× the model itself.
+
+Topic: Day 243 — Multi-Head, Multi-Query, Grouped-Query Attention.
+
+MHA (original): every Q head has its own K, V. KV cache scales with num_heads.
+
+MQA (Multi-Query): all Q heads share one K, V. KV cache shrinks approximately 16×. Slight quality loss.
+
+GQA (Grouped-Query, used everywhere now): groups of Q heads share K, V. The pragmatic compromise — Llama 3 uses 8 KV heads for 64 Q heads → 8× smaller KV cache than MHA, no measurable quality loss.
+
+Topic: Day 244 — KV Cache Quantization.
+
+Store K and V in FP8 or INT8 instead of BF16 → 2× smaller cache, more concurrent requests, longer contexts. Now standard in vLLM, TensorRT-LLM. Quality cost: usually negligible.
+
+Topic: Day 245 — PagedAttention Recap (Day 223 expanded).
+
+The KV cache for a request grows token-by-token to an unknown final length. Allocating max_seq_len upfront wastes 60–80% of memory. PagedAttention allocates fixed-size blocks (typically 16 tokens) on demand, indexed by a per-request block table — exactly like an OS's virtual memory page table. Eliminates fragmentation.
+
+Topic: Day 246 — Prefix Sharing via PagedAttention.
+
+Because blocks are physical and shared via reference counts, two requests with the same first 1,000 tokens (e.g., a 1,000-token system prompt) physically share those KV blocks in VRAM. Only diverging blocks are copied (copy-on-write). For chat applications with long system prompts, this is a massive win.
+
+Topic: Day 247 — RadixAttention (SGLang).
+
+SGLang's variant: maintain a radix tree of all observed prefixes across all requests, automatically sharing matched portions. Goes beyond vLLM's prefix-cache by sharing across more sophisticated tree-shaped conversation patterns.
+
+Section: Week 2 — FlashAttention and Friends.
+
+Topic: Day 248 — Why Standard Attention Was Slow.
+
+Naïve attention: compute the full N×N attention matrix in HBM, apply softmax, multiply by V. For long N, this matrix is huge (N² × bytes), and you're constantly shuttling it between SRAM (fast, tiny) and HBM (slow, big). HBM bandwidth becomes the bottleneck.
+
+Topic: Day 249 — FlashAttention (2022, Tri Dao).
+
+Reorganize the computation: tile the inputs, do the softmax online (incrementally), never materialize the N×N matrix. Stays in fast SRAM. Same math, approximately 2–4× faster, uses far less memory (O(N) instead of O(N²)). This single algorithm enabled long context (32k → 1M+).
+
+Topic: Day 250 — FlashAttention-2 (2023) and FlashAttention-3 (2024).
+
+Iterative improvements — better parallelism, better tensor-core utilization, FP8 support on H100. FA-3 hits approximately 75% of the H100's theoretical peak. Production engines all use some version of FlashAttention internally.
+
+Topic: Day 251 — Memory-Efficient Attention Variants.
+
+xformers (Meta), PagedAttention kernels (vLLM), CUDA Graphs-based attention (TensorRT-LLM). Different implementations of the same idea: tile, fuse, avoid HBM round-trips. You'll see these in framework configs and benchmarks.
+
+Topic: Day 252 — Sliding Window / Local Attention.
+
+For very long contexts, restrict attention to the last W tokens (e.g., 4096) instead of all of them. Reduces compute and KV memory. Used by Mistral 7B, Gemma. Loses some long-range info; usually combined with sparse "global" attention or chunked prefill.
+
+Topic: Day 253 — Sparse / Linear Attention (research).
+
+Lots of attention variants try to break the O(n²) wall: Performer, Linformer, Mamba, Hyena, RetNet. Mamba (state-space models) and hybrids (Jamba, Zamba, Llama-Mamba) are seeing real production use in 2025. Pure transformers still dominate, but the field is exploring.
+
+Section: Week 3 — Speculative Decoding & Friends.
+
+Topic: Day 254 — The Core Idea.
+
+Decode is bandwidth-bound — most of the time the GPU is waiting on memory, not computing. So: have a small "draft" model ( approximately 1–10% the size) generate K candidate tokens cheaply. Then run the big "target" model once on all K, in parallel. Wherever drafts agree with the target's predictions, accept them — for free.
+
+Topic: Day 255 — Why It's Lossless.
+
+A clever rejection-sampling scheme guarantees the final output distribution is identical to the target model's. You don't lose any quality — you just sometimes do useless work (rejected drafts).
+
+Topic: Day 256 — Speculative Decoding Speedups.
+
+Real-world: 1.5–3× faster decoding, depending on draft acceptance rate. Higher with related drafter (e.g., Llama-3 70B target + Llama-3 8B drafter). Built into vLLM (--speculative-model), llama.cpp, TensorRT-LLM.
+
+Topic: Day 257 — Medusa, Lookahead Decoding, EAGLE.
+
+Variants that don't need a separate small model:
+
+Medusa — add extra "lookahead heads" to the model that predict tokens 2, 3, 4 ahead.
+
+Lookahead decoding — use n-gram patterns from the model's recent output to propose candidates.
+
+EAGLE / EAGLE-2 — current SOTA; tiny adapter that drafts at the feature level. 2–4× speedup, no separate model needed.
+
+Topic: Day 258 — Self-Speculative Decoding.
+
+Use the same model in two modes — early-exit the first few layers as the drafter, full network as the verifier. Saves the cost of running a separate draft model entirely.
+
+Topic: Day 259 — Throughput vs Latency Tradeoff.
+
+Speculative decoding is mostly a latency optimization (faster single-stream). For high-batch throughput it can actually hurt (the GPU was already saturated; verification is wasted work). Engines disable it under heavy load.
+
+Section: Week 4 — Batching, Parallelism, Compilation.
+
+Topic: Day 260 — Continuous Batching (deep dive).
+
+Each step, the scheduler decides which requests run together. Decisions consider: KV memory availability, fairness, priority, prefill-decode mixing. The hard part: prefills are big spiky workloads, decodes are tiny steady ones. Mixing them well (chunked prefill, prefill-decode disaggregation — Day 234) is the frontier of serving research.
+
+Topic: Day 261 — Tensor Parallelism Inside an Engine.
+
+Split each weight matrix across GPUs. The matmul becomes: each GPU computes its slice, then an all-reduce collective sums the results. Requires NVLink-class bandwidth or you bottleneck on networking. Typical: TP=2/4/8 within a single node.
+
+Topic: Day 262 — Pipeline Parallelism for Inference.
+
+Split the model by layers across GPUs. Layer 1–20 on GPU 0, layer 21–40 on GPU 1, etc. Tokens flow through like an assembly line. Less interconnect-hungry than tensor parallelism but introduces "pipeline bubbles." Useful when you have multiple servers connected by slower networking.
+
+Topic: Day 263 — Expert Parallelism (for MoE).
+
+Mixture-of-Experts models like Mixtral or DeepSeek-V3 have many "experts" but only activate a few per token. Expert parallelism distributes experts across GPUs; each token is routed to the GPU(s) holding its chosen experts. Requires careful load balancing. Critical for serving big MoEs efficiently.
+
+Topic: Day 264 — CUDA Graphs.
+
+Each PyTorch op has Python and CUDA launch overhead. CUDA Graphs capture a sequence of ops once, then replay them with near-zero overhead. Big win for decode (small, repetitive kernels). Used by vLLM, TensorRT-LLM.
+
+Topic: Day 265 — Kernel Fusion.
+
+Merge multiple ops into one CUDA kernel — fewer kernel launches, fewer HBM round-trips. Examples: fused LayerNorm+GEMM, fused QKV projection, fused gated MLP. Inference engines do this aggressively, often via TVM, Triton (the language), or hand-written kernels.
+
+Topic: Day 266 — Compilation: TensorRT, torch.compile, MAX.
+
+Whole-graph compilation (vs eager execution) lets the engine plan memory layout, fuse kernels, pick optimal algorithms per shape. TensorRT-LLM is the apex of this approach. torch.compile brings some of these benefits to standard PyTorch with one decorator.
+
+Topic: Day 267 — Chunked Prefill.
+
+A 32k-token prompt prefill blocks the GPU for hundreds of milliseconds — terrible for other users' decode latency. Chunked prefill breaks the prompt into smaller chunks (e.g., 512 tokens) processed across many scheduling steps, interleaved with ongoing decodes. Smooths latency at small throughput cost.
+
+Topic: Day 268 — Speculation + PagedAttention + Continuous Batching.
+
+Modern serving stacks combine all of the above. The result: vLLM with all bells and whistles serves 5–20× more tokens per dollar than the same model under naïve PyTorch.
+
+Topic: Day 269 — Measuring Performance: TTFT, TPOT, ITL.
+
+TTFT — Time To First Token (prefill latency).
+
+TPOT — Time Per Output Token (decode latency, average).
+
+ITL — Inter-Token Latency (decode latency, jitter).
+
+Throughput — tokens/sec (server-wide).
+
+SLOs typically target TTFT less than 1s and TPOT less than 50ms for chatbot UX. Reasoning models relax TPOT but care more about total response time.
+
+Topic: 🛠 Build It — Month 9 Hands-On.
+
+On your vLLM server from Month 8, enable speculative decoding: --speculative-model Qwen/Qwen3-0.5B --num-speculative-tokens 5. Measure TPOT before and after.
+
+Enable prefix caching (on by default in vLLM v1). Send 100 requests sharing a 2,000-token system prompt. Measure TTFT for request #1 vs #100. The difference is prefix-cache magic.
+
+Try --kv-cache-dtype fp8. Measure max concurrent requests before OOM — should approximately double.
+
+Hit the server with mixed traffic (short chat, long RAG, long generation). Plot TTFT and TPOT distributions. You're now reading real serving telemetry.
+
+Deliverable: a perf comparison table — baseline vs each optimization, on a workload that mimics your real use case.
+
+Topic: Day 270 — Recap & "Explain it Back".
+
+Quiz yourself:
+
+Why is the KV cache so big, and what's GQA's role?
+
+What problem does FlashAttention solve, and how?
+
+Walk through one cycle of speculative decoding.
+
+Why is continuous batching strictly better than static batching?
+
+What are TTFT and TPOT, and which one matters for chat UX?
+
+You now understand the optimization toolbox. Next: how those big models got trained across thousands of GPUs.
