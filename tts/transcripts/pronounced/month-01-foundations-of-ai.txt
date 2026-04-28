@@ -1,0 +1,160 @@
+Month 01 — Foundations of A.I. (Days 1–30)
+
+Goal of this month: Understand the 70-year arc from "A.I. is hand written rules" to "A.I. is a giant statistical pattern-matcher trained on data." By Day 30 you should be able to explain why the field shifted away from symbolic A.I. and toward neural networks.
+
+Section: Week 1 — What Even Is A.I.?.
+
+Topic: Day 1 — The word "Artificial Intelligence".
+
+Coined at the Dartmouth Workshop in 1956 by John McCarthy. The original definition was "making a machine behave in ways that would be called intelligent if a human did them." That definition is deliberately vague — and 70 years later it still is. A.I. is an aspiration, not a single technology.
+
+Topic: Day 2 — Two Schools of A.I.: Symbolic vs. Connectionist.
+
+From the very beginning there were two camps:
+
+Symbolic A.I. ("Good Old-Fashioned A.I." / go fie): Encode human knowledge as rules and logic. "if temperature greater than 100 and patient has cough then suggest flu test.".
+
+Connectionist A.I.: Build networks of simple units (loosely inspired by neurons) and let them learn patterns from examples instead of being told rules.
+
+The symbolic camp dominated from approximately 1956 to approximately 1990. The connectionist camp dominates today. Modern L.L.M.s are 100% connectionist.
+
+Topic: Day 3 — Expert Systems (the 1980s peak of symbolic A.I.).
+
+Systems like mycin (medical diagnosis) and X con (configuring D.E.C. computers) were thousands of hand written if then rules. They worked — narrowly. But they couldn't learn, couldn't handle ambiguity, and broke the moment reality didn't match the rule book.
+
+Topic: Day 4 — The First "A.I. Winter" (late 1970s) and Second (late 1980s).
+
+Twice, hype outran reality. Funding dried up. Researchers learned a hard lesson: handcrafted rules don't scale. There are too many edge cases in the real world. This pain is what eventually pushed the field toward learning-from-data.
+
+Topic: Day 5 — Machine Learning enters.
+
+Machine Learning (M.L.) is a sub-field of A.I. where the program infers the rules from examples instead of being given them. You show it 10,000 photos labeled "cat" or "not cat" and it figures out the pattern itself. Term popularized by Arthur Samuel (1959) but didn't go mainstream until the 1990s when computers got fast enough.
+
+Topic: Day 6 — Three Flavors of Machine Learning.
+
+Supervised learning: labeled examples (photo → "cat"). Most common.
+
+Unsupervised learning: find structure in unlabeled data (clustering customers).
+
+Reinforcement learning: an agent takes actions, gets rewards, learns a policy (game-playing, robotics, R.L.H.F. for L.L.M.s).
+
+L.L.M. training uses all three at different stages — supervised pretraining, then reinforcement learning from human feedback.
+
+Topic: Day 7 — Recap & "Explain it Back".
+
+Could you explain to a friend, in 60 seconds: "Why did A.I. shift from writing rules to learning from data?" If yes, move on.
+
+Section: Week 2 — Classical Machine Learning.
+
+Topic: Day 8 — Features and Labels.
+
+Before deep learning, M.L. required feature engineering — humans deciding which numbers about the data mattered. For spam detection: number of exclamation marks, presence of the word "viagra," sender domain age, etc. The model learned weights for these human-chosen features.
+
+Topic: Day 9 — Linear Regression and Logistic Regression.
+
+The two simplest M.L. models. Linear regression predicts a number (house price). Logistic regression predicts a probability (spam vs not-spam). Both essentially draw a line/plane through the data. Still used everywhere today for tabular data.
+
+Topic: Day 10 — Decision Trees and Random Forests.
+
+A decision tree is literally a flowchart of if/else questions, but the splits are learned from data. A random forest is hundreds of trees voting. Powerful, interpretable, and dominant for tabular business data even in 2026.
+
+Topic: Day 11 — Support Vector Machines (S.V.M.s).
+
+The hot algorithm of the 2000s. Finds the "widest road" separating two classes. Mostly displaced by neural nets for images and text but still appears in scientific computing.
+
+Topic: Day 12 — The Bias / Variance Tradeoff.
+
+High bias (underfitting): model is too simple, misses the pattern.
+
+High variance (overfitting): model memorizes the training data and fails on new data.
+
+Every M.L. technique — and every L.L.M. trick — is ultimately about navigating this tradeoff.
+
+Topic: Day 13 — Train / Validation / Test Splits.
+
+You always split your data three ways. Train teaches the model. Validation tunes settings. Test is the final, untouched honest exam. Violating this discipline ("test set leakage") is the #1 way M.L. teams fool themselves.
+
+Topic: Day 14 — Why Classical M.L. Plateaued for Images and Text.
+
+Hand-engineered features stop working when the input is raw pixels or raw words. There are too many subtle patterns (curve of an ear, sarcasm in a sentence) for a human to enumerate. Something had to learn the features themselves. Enter deep learning.
+
+Section: Week 3 — Neural Networks: The Original Idea.
+
+Topic: Day 15 — The Perceptron (1958).
+
+Frank Rosenblatt's perceptron was the first artificial neuron — inputs × weights, summed, passed through a step function. It could learn simple patterns. The New York Times claimed it would soon "walk, talk, see, write." It couldn't. Marvin Minsky published a 1969 book showing single-layer perceptrons couldn't even learn exclusive or. Funding collapsed.
+
+Topic: Day 16 — Multi-Layer Networks Solve exclusive or.
+
+Stack perceptrons in layers and you can represent any function (universal approximation theorem). The catch: nobody knew how to train multi-layer networks efficiently — until backpropagation.
+
+Topic: Day 17 — Backpropagation (1986).
+
+Rumelhart, Hinton, and Williams popularized backprop — an algorithm that uses calculus's chain rule to figure out how much each weight contributed to the error, and nudges every weight slightly to reduce the error. This is still how every neural network on Earth, including G.P.T. five, is trained.
+
+Topic: Day 18 — Activation Functions.
+
+Each neuron applies a non-linear function (sigmoid, tanh, ray loo) to its sum. Without non linearity, stacking layers is mathematically equivalent to one layer. ray loo (max(0, x)) became dominant in the 2010s because it's fast and trains well.
+
+Topic: Day 19 — Gradient Descent.
+
+The optimization recipe: compute error, compute the gradient (direction of steepest increase), step the weights opposite that direction. Repeat millions of times. Variants like S.G.D., Adam, Adam W (the L.L.M. standard) tweak this.
+
+Topic: Day 20 — Loss Functions.
+
+The number the model is trying to minimize. For classification: cross entropy loss. For regression: mean squared error. L.L.M.s use cross entropy on the next token prediction task. Remember this — it's the only objective an L.L.M. has during pretraining.
+
+Topic: Day 21 — The Second A.I. Winter Ends Quietly.
+
+Through the 1990s and 2000s, neural nets worked but were slow and beaten by S.V.M.s on most benchmarks. Researchers like Geoffrey Hinton, Yann LeCun, and Yoshua Bengio kept the flame alive. Two things eventually changed the game: G.P.U.s and big datasets.
+
+Section: Week 4 — The Deep Learning Revolution.
+
+Topic: Day 22 — Image Net (2009).
+
+Fei-Fei Li's team labeled 14 million images across 20,000 categories. For the first time, neural nets had enough data to actually learn. Image Net became the annual benchmark that drove progress.
+
+Topic: Day 23 — AlexNet (2012) — The Big Bang.
+
+A deep convolutional neural network (C.N.N.) by Krizhevsky, Sutskever, Hinton crushed Image Net by 10+ percentage points using two consumer G.P.U.s. This is the moment modern A.I. started. Every researcher pivoted to deep learning within a year.
+
+Topic: Day 24 — Convolutional Neural Networks (C.N.N.s).
+
+C.N.N.s use small filters that slide over images, detecting edges, then textures, then object parts, then objects. They mirror how the visual cortex works. Dominant for vision from 2012 to approximately 2020 (when Vision Transformers started to compete).
+
+Topic: Day 25 — Recurrent Neural Networks (R.N.N.s) and L.S.T.M.s.
+
+For sequential data (text, speech, time series), researchers used R.N.N.s — networks with a "memory" that carries information from one step to the next. L.S.T.M.s and GRUs were better variants. They worked but were slow (had to process tokens one-by-one) and forgot things over long sequences.
+
+Topic: Day 26 — Word Embeddings: word2vec (2013) and GloVe (2014).
+
+A breakthrough: represent each word as a approximately 300-dimensional vector of numbers, learned so that similar words are close together. Famously: king − man + woman ≈ queen. This is the seed idea of every modern L.L.M. — words are points in a high dimensional space.
+
+Topic: Day 27 — Sequence-to-Sequence Models (2014).
+
+Google's seq2seq used an R.N.N. encoder to read a sentence, compress it into a vector, and an R.N.N. decoder to write a translation. It worked — barely. The bottleneck: that single compressed vector lost too much information.
+
+Topic: Day 28 — The Attention Mechanism (2014–2015).
+
+Bahdanau et al. fixed the bottleneck: instead of compressing the whole input into one vector, let the decoder attend to (look back at) any input position when generating each output word. This is the single most important idea in modern A.I.. We'll spend all of Month 2 on it.
+
+Topic: Day 29 — Why Deep Learning Works At All (intuition).
+
+Three ingredients had to converge: (1) enough data (internet scale), (2) enough compute (G.P.U.s), (3) enough algorithmic tricks (backprop, ray loo, dropout, batch norm, attention). None alone were sufficient. All three together unlocked the 2010s revolution.
+
+Topic: Day 30 — Recap & "Explain it Back".
+
+Quiz yourself:
+
+What was wrong with symbolic A.I.?
+
+What is backpropagation, in one sentence?
+
+Why did 2012 (AlexNet) change everything?
+
+What is a word embedding?
+
+Why are R.N.N.s slow?
+
+If you can answer all five, you're ready for Month 2 — The Transformer Era, where everything we use today was invented.
+

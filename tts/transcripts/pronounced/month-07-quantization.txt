@@ -1,0 +1,186 @@
+Month 07 — Quantization (Days 181–210)
+
+Goal of this month: Understand how a 140 gigabytes model fits onto a 24 gigabytes consumer G.P.U.. By Day 210 you'll be able to read filenames like qwen3-14b-instruct-Q four K M.gguf or Llama three.1-70B-Instruct-A.W.Q. and know exactly what they mean.
+
+Section: Week 1 — Number Formats.
+
+Topic: Day 181 — Why Number Format Matters.
+
+A model parameter is just a number. Stored in 32 bits (F.P. thirty two) it takes 4 bytes. Stored in 4 bits (int four) it takes 0.5 bytes — 8× smaller. Smaller = fits in less V ram, reads from memory faster, runs faster (inference is bandwidth bound — Day 160). The cost: precision.
+
+Topic: Day 182 — F.P. thirty two (Single Precision).
+
+The classical default — 1 sign bit, 8 exponent bits, 23 mantissa bits. Range approximately 10⁻³⁸ to 10³⁸, approximately 7 decimal digits of precision. Used historically for training; rarely used in 2026.
+
+Topic: Day 183 — F.P. sixteen (Half Precision).
+
+1 sign, 5 exponent, 10 mantissa. Half the memory, approximately 2× the speed on tensor cores. Problem: narrow range — overflows easily during training.
+
+Topic: Day 184 — B.F. sixteen (Brain Float 16).
+
+Google's invention. 1 sign, 8 exponent (same as F.P. thirty two), 7 mantissa. Same dynamic range as F.P. thirty two, lower precision. Trains stably without loss scaling. Now the default for both training and inference. Supported on A one hundred/H one hundred/B one hundred and modern A.M.D./Intel.
+
+Topic: Day 185 — F.P. eight.
+
+1 sign, 4–5 exponent, 2–3 mantissa. Two variants: E four M three (more precision) for forward, E five M two (more range) for gradients. H one hundred added native F.P. eight tensor cores. Used for both training (DeepSeek V three) and inference (V L.L.M., Tensor R.T. L.L.M.).
+
+Topic: Day 186 — int eight / int four / int two.
+
+Pure integers, no exponent. int eight = 256 levels, int four = 16 levels. To use them for weights, you store a per-group scale factor (F.P. sixteen) so the integers represent a range like [-2.5, 2.5] in steps of approximately 0.3. This is the foundation of "post training quantization" — Day 191.
+
+Topic: Day 187 — F.P. four (N.V.F.P. four, M.X.F.P. four).
+
+The 2024–2025 frontier. 1 sign, 2 exponent, 1 mantissa = 4 bits per weight, native tensor core support on Blackwell. With small per-block scale factors (microscaling), accuracy holds up impressively. Expect F.P. four to become the default inference format on new hardware.
+
+Topic: Day 188 — Quick Reference Table.
+
+Section: Week 2 — Quantization Methods.
+
+Topic: Day 189 — Two Worlds: Training-Time vs post training.
+
+Quantization-Aware Training (Q.A.T.) — train (or fine tune) the model with quantization simulated in the loop. Best quality. Expensive.
+
+post training Quantization (P.T.Q.) — take an already-trained B.F. sixteen model and crunch its weights down. Cheaper, faster, slightly lower quality. P.T.Q. dominates in practice.
+
+Topic: Day 190 — Round-To-Nearest (R.T.N.) — The Naïve Baseline.
+
+Just round each weight to the nearest representable value. Works okay for int eight. Falls apart at int four — the rounding errors compound through 80 layers and degrade the model noticeably.
+
+Topic: Day 191 — G.P.T.Q..
+
+A smarter P.T.Q. method: process weights one column at a time, and after rounding each column, adjust the remaining weights to compensate for the rounding error. Uses a small calibration dataset. Result: surprisingly little quality loss at int four. The first widely-used 4-bit method. File extension: -G.P.T.Q..
+
+Topic: Day 192 — A.W.Q. (Activation-aware Weight Quantization).
+
+Observation: not all weights matter equally — those that interact with large-magnitude activations matter most. A.W.Q. identifies and protects the top approximately 1% of "salient" weight channels (keeps them in higher precision, scales the rest accordingly). Often beats G.P.T.Q. in quality at the same bit-width. File extension: -A.W.Q..
+
+Topic: Day 193 — G.G.U.F.: The Llama.cpp Format.
+
+G.G.U.F. (G.P.T.-Generated Unified Format) is the file format used by llama dot C.P.P. / Ollama / L.M. Studio. It contains the quantized weights, tokenizer, chat template, metadata — everything needed to run, all in one file. Successor to the older G.G.M.L. format.
+
+Topic: Day 194 — Decoding G.G.U.F. Quantization Names.
+
+Names like Q four K M, Q five K S, Q eight zero look cryptic. Reading guide:
+
+Qless than n greater than — n-bit quantization (Q four = approximately 4 bits/weight).
+
+_K — k-quants (better than older Q four zero, uses superblocks with multiple scales).
+
+_S / _M / _L — small / medium / large variants — slightly more bits in critical layers.
+
+Q eight zero — legacy 8-bit, very high quality, large file.
+
+Practical recommendation: Q four K M is the sweet spot for most use cases. Q five K M if you have spare V ram. Q six K for near-lossless. Q eight zero if you want overkill.
+
+Topic: Day 195 — E.X.L. two / X Llama V two.
+
+A format optimized for fast G.P.U.-only inference (no C.P.U. offload). Allows mixed precision — different layers/columns at different bitwidths chosen by importance. Often faster than G.P.T.Q. on consumer Nvidia G.P.U.s.
+
+Topic: Day 196 — bitsandbytes.
+
+The library used by Hugging Face for on-the-fly int eight / N.F. four (4-bit normal-float) quantization, especially during Q low rah fine tuning. Less optimized than G.P.T.Q. A.W.Q. for pure inference, but very convenient.
+
+Topic: Day 197 — Smooth Quant, ZeroQuant, OmniQuant.
+
+Research methods that smooth the activation magnitudes (rebalance "hard to quantize" tensors) before quantizing. Used inside F.P. eight production stacks like Tensor R.T. L.L.M..
+
+Section: Week 3 — K.V. Cache Quantization (preview of Month 9).
+
+Topic: Day 198 — Weights Aren't the Only Big Thing.
+
+The K.V. cache (the model's memory of the prompt so far — Month 9) can dwarf the weights for long contexts. A 70B model at 32k context has a K.V. cache of approximately 10 gigabytes per request. Quantizing the K.V. cache (K.V.-int8, K.V.-fp8) is now standard in V L.L.M./Tensor R.T. L.L.M..
+
+Topic: Day 199 — Activation Quantization.
+
+For W eight A eight (weight-int8 + activation-int8) inference, you also quantize the runtime activations. Harder than weight quantization because activations can have outliers. Smooth Quant and F.P. eight fix this. Required to actually get the speed benefit on tensor cores.
+
+Topic: Day 200 — end to end Quantization Recipes.
+
+Modern production typically uses one of:
+
+W four A sixteen (weights int four, activations F.P. sixteen) — G.P.T.Q. A.W.Q.; consumer-friendly.
+
+W eight A eight (int eight or F.P. eight both) — best speed on H one hundred/Blackwell, used at scale.
+
+F.P. four weights + F.P. eight K.V. — bleeding edge on Blackwell.
+
+Section: Week 4 — Tradeoffs and Practical Choices.
+
+Topic: Day 201 — Quality Cliff at Low Bits.
+
+Across most models, int eight is essentially indistinguishable from B.F. sixteen. int four loses approximately 1–3% on most benchmarks. int three starts to feel noticeably worse. int two is broken for general tasks (still usable for very large models — Q two of a 405B can outperform Q eight of a 70B at the same V ram).
+
+Topic: Day 202 — The "Bigger Quantized Beats Smaller Full-Precision" Rule.
+
+A rule of thumb confirmed across many benchmarks: at a given V ram budget, you almost always get better quality from a larger model at lower precision than a smaller model at higher precision. A Q four 70B beats a B.F. sixteen 13B easily.
+
+Topic: Day 203 — Speed Impact of Quantization.
+
+Quantization helps inference speed in two ways:
+
+Memory bandwidth — less to read = faster (the bigger win for single user).
+
+Compute — int eight/F.P. eight, F.P. four tensor cores are 2–4× faster than B.F. sixteen on supported hardware.
+
+On older G.P.U.s without int four tensor cores, int four weights get dequantized to F.P. sixteen on the fly — you save V ram but not necessarily compute.
+
+Topic: Day 204 — Imatrix / Importance Matrix Quantization.
+
+A llama dot C.P.P. feature: use a calibration dataset to compute per-weight importance, then allocate bits more carefully. Imatrix-quantized GGUFs (-imat) are noticeably better at very low bits (Q two, Q three).
+
+Topic: Day 205 — When Quantization Hurts: Long Context, Math, Code.
+
+Reasoning, math, and code generation are more sensitive to quantization noise. If your task is one of these, prefer Q five / Q six over Q four. Reasoning models (R one, o1-style) are especially sensitive.
+
+Topic: Day 206 — Quantization for Embeddings.
+
+Embedding models also get quantized — and additionally, you can quantize the embedding vectors themselves (for example., binary embeddings, scalar-quantized embeddings) to shrink vector databases by 32×. Small accuracy hit, huge storage win.
+
+Topic: Day 207 — Mixed Precision Everywhere.
+
+Production stacks today routinely mix: B.F. sixteen for embeddings, F.P. eight for matmuls, F.P. sixteen for softmax/normalization, int four weights, int eight K.V. cache. The framework manages it all. You just pick a recipe.
+
+Topic: Day 208 — How to Choose, in Practice.
+
+Local laptop / 8 gigabytes V ram: Q four K M of a 7B model.
+
+Local 24 gigabytes: Q five K M of a 14B, or Q four K M of a 32B.
+
+Mac with 64–128 gigabytes: Q four–Q six of 70B.
+
+Cloud single H one hundred: F.P. eight of 70B.
+
+Cloud 8× H one hundred: F.P. eight of 405B with tensor parallelism.
+
+Topic: Day 209 — How to Verify Quality After Quantizing.
+
+Run a small benchmark suite (M.M.L.U., G.S.M. eight K, Human Eval, or your own evals) on both B.F. sixteen and quantized versions. Look at score deltas. Spot-check outputs subjectively. Don't trust perplexity alone — it can hide capability degradation.
+
+Topic: 🛠 Build It — Month 7 hands on.
+
+With Ollama, pull the same model at three quants: qwen3:8b-q4_K_M, qwen3:8b-q5_K_M, qwen3:8b-q8_0. Note the file sizes.
+
+Run identical prompts through each. Use time to measure generation speed (tokens per second). Use a stronger model as a judge to score quality.
+
+Plot it: x-axis = bits-per-weight, y-axis = quality (and tokens per second). You've just produced your first quantization tradeoff curve — exactly what real teams use to pick a deployment quant.
+
+Bonus: download the B.F. sixteen version from Hugging Face and use bitsandbytes to load it in 4-bit on the fly. Compare to the G.G.U.F. Q four.
+
+Deliverable: a one-page write-up with the curve and a recommended quant for your hardware.
+
+Topic: Day 210 — Recap & "Explain it Back".
+
+Quiz yourself:
+
+Why does quantization make inference faster?
+
+What does Q four K M mean?
+
+What's the difference between G.P.T.Q. and A.W.Q.?
+
+Why is "bigger model at lower precision" usually better than the reverse?
+
+When would you avoid int four?
+
+You now understand the math format that lets a 70B model run on your gaming P.C.. Next month: the engines that actually run it.
+
