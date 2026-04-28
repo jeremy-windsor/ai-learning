@@ -1,0 +1,174 @@
+Month 09 — Throughput Optimization (Days 241–270)
+
+Goal of this month: Understand the specific tricks that make modern inference 10–100× faster than naïve Pie Torch. By Day 270 you'll know what every flag in vllm serve --help actually does.
+
+Section: Week 1 — The K.V. Cache In Depth.
+
+Topic: Day 241 — Why the K.V. Cache Exists.
+
+At decode step t, attention needs the K and V vectors of all previous tokens 1.t-1 plus the new token. Recomputing K,V for all past tokens every step would be O(t) work per token — a 1000-token response would do 500,000 redundant computations. Cache them once, reuse forever (within the request).
+
+Topic: Day 242 — K.V. Cache Size: The Real Memory Hog.
+
+Per layer, per token: 2 (K and V) × num heads × head_dim × bytes_per_element. Total: × num_layers × sequence length × batch_size. For Llama three-70B (80 layers, 8 K.V. heads, 128 head dim, B.F. sixteen): about 320 kilobytes per token. A 32k-context request = approximately 10 gigabytes. A batch of 32 such requests = 320 gigabytes — more than 4× the model itself.
+
+Topic: Day 243 — multi head, multi query, grouped query Attention.
+
+M.H.A. (original): every Q head has its own K, V. K.V. cache scales with num heads.
+
+M.Q.A. (multi query): all Q heads share one K, V. K.V. cache shrinks approximately 16×. Slight quality loss.
+
+G.Q.A. (grouped query, used everywhere now): groups of Q heads share K, V. The pragmatic compromise — Llama 3 uses 8 K.V. heads for 64 Q heads → 8× smaller K.V. cache than M.H.A., no measurable quality loss.
+
+Topic: Day 244 — K.V. Cache Quantization.
+
+Store K and V in F.P. eight or int eight instead of B.F. sixteen → 2× smaller cache, more concurrent requests, longer contexts. Now standard in V L.L.M., Tensor R.T. L.L.M.. Quality cost: usually negligible.
+
+Topic: Day 245 — Paged Attention Recap (Day 223 expanded).
+
+The K.V. cache for a request grows token-by-token to an unknown final length. Allocating max_seq_len upfront wastes 60–80% of memory. Paged Attention allocates fixed size blocks (typically 16 tokens) on demand, indexed by a per request block table — exactly like an O.S.'s virtual memory page table. Eliminates fragmentation.
+
+Topic: Day 246 — Prefix Sharing via Paged Attention.
+
+Because blocks are physical and shared via reference counts, two requests with the same first 1,000 tokens (for example., a 1,000-token system prompt) physically share those K.V. blocks in V ram. Only diverging blocks are copied (copy-on-write). For chat applications with long system prompts, this is a massive win.
+
+Topic: Day 247 — Radix Attention (S.G. Lang).
+
+S.G. Lang's variant: maintain a radix tree of all observed prefixes across all requests, automatically sharing matched portions. Goes beyond V L.L.M.'s prefix cache by sharing across more sophisticated tree-shaped conversation patterns.
+
+Section: Week 2 — Flash Attention and Friends.
+
+Topic: Day 248 — Why Standard Attention Was Slow.
+
+Naïve attention: compute the full N×N attention matrix in H.B.M., apply softmax, multiply by V. For long N, this matrix is huge (N² × bytes), and you're constantly shuttling it between S ram (fast, tiny) and H.B.M. (slow, big). H.B.M. bandwidth becomes the bottleneck.
+
+Topic: Day 249 — Flash Attention (2022, Tri Dao).
+
+Reorganize the computation: tile the inputs, do the softmax online (incrementally), never materialize the N×N matrix. Stays in fast S ram. Same math, approximately 2–4× faster, uses far less memory (O(N) instead of O(N²)). This single algorithm enabled long context (32k → 1M+).
+
+Topic: Day 250 — Flash Attention-2 (2023) and Flash Attention-3 (2024).
+
+Iterative improvements — better parallelism, better tensor core utilization, F.P. eight support on H one hundred. F.A. three hits approximately 75% of the H one hundred's theoretical peak. Production engines all use some version of Flash Attention internally.
+
+Topic: Day 251 — Memory-Efficient Attention Variants.
+
+xformers (Meta), Paged Attention kernels (V L.L.M.), cooda Graphs-based attention (Tensor R.T. L.L.M.). Different implementations of the same idea: tile, fuse, avoid H.B.M. round trips. You'll see these in framework configs and benchmarks.
+
+Topic: Day 252 — Sliding Window / Local Attention.
+
+For very long contexts, restrict attention to the last W tokens (for example., 4096) instead of all of them. Reduces compute and K.V. memory. Used by Mistral 7B, Gemma. Loses some long-range info; usually combined with sparse "global" attention or chunked prefill.
+
+Topic: Day 253 — Sparse / Linear Attention (research).
+
+Lots of attention variants try to break the O(n²) wall: Performer, Linformer, Mamba, Hyena, RetNet. Mamba (state-space models) and hybrids (Jamba, Zamba, Llama-Mamba) are seeing real production use in 2025. Pure transformers still dominate, but the field is exploring.
+
+Section: Week 3 — Speculative Decoding & Friends.
+
+Topic: Day 254 — The Core Idea.
+
+Decode is bandwidth bound — most of the time the G.P.U. is waiting on memory, not computing. So: have a small "draft" model ( approximately 1–10% the size) generate K candidate tokens cheaply. Then run the big "target" model once on all K, in parallel. Wherever drafts agree with the target's predictions, accept them — for free.
+
+Topic: Day 255 — Why It's Lossless.
+
+A clever rejection-sampling scheme guarantees the final output distribution is identical to the target model's. You don't lose any quality — you just sometimes do useless work (rejected drafts).
+
+Topic: Day 256 — Speculative Decoding Speedups.
+
+Real-world: 1.5–3× faster decoding, depending on draft acceptance rate. Higher with related drafter (for example., Llama three 70B target + Llama three 8B drafter). Built into V L.L.M. (--speculative model), llama dot C.P.P., Tensor R.T. L.L.M..
+
+Topic: Day 257 — Medusa, Lookahead Decoding, eagle.
+
+Variants that don't need a separate small model:
+
+Medusa — add extra "lookahead heads" to the model that predict tokens 2, 3, 4 ahead.
+
+Lookahead decoding — use n-gram patterns from the model's recent output to propose candidates.
+
+eagle / eagle-2 — current state of the art; tiny adapter that drafts at the feature level. 2–4× speedup, no separate model needed.
+
+Topic: Day 258 — Self-Speculative Decoding.
+
+Use the same model in two modes — early-exit the first few layers as the drafter, full network as the verifier. Saves the cost of running a separate draft model entirely.
+
+Topic: Day 259 — Throughput vs Latency Tradeoff.
+
+Speculative decoding is mostly a latency optimization (faster single stream). For high-batch throughput it can actually hurt (the G.P.U. was already saturated; verification is wasted work). Engines disable it under heavy load.
+
+Section: Week 4 — Batching, Parallelism, Compilation.
+
+Topic: Day 260 — Continuous Batching (deep dive).
+
+Each step, the scheduler decides which requests run together. Decisions consider: K.V. memory availability, fairness, priority, prefill decode mixing. The hard part: prefills are big spiky workloads, decodes are tiny steady ones. Mixing them well (chunked prefill, prefill decode disaggregation — Day 234) is the frontier of serving research.
+
+Topic: Day 261 — Tensor Parallelism Inside an Engine.
+
+Split each weight matrix across G.P.U.s. The matmul becomes: each G.P.U. computes its slice, then an all reduce collective sums the results. Requires N.V. Link-class bandwidth or you bottleneck on networking. Typical: T.P.=2/4/8 within a single node.
+
+Topic: Day 262 — Pipeline Parallelism for Inference.
+
+Split the model by layers across G.P.U.s. Layer 1–20 on G.P.U. 0, layer 21–40 on G.P.U. 1, etc. Tokens flow through like an assembly line. Less interconnect-hungry than tensor parallelism but introduces "pipeline bubbles." Useful when you have multiple servers connected by slower networking.
+
+Topic: Day 263 — Expert Parallelism (for M.O.E.).
+
+mixture of experts models like Mixtral or DeepSeek V three have many "experts" but only activate a few per token. Expert parallelism distributes experts across G.P.U.s; each token is routed to the G.P.U.(s) holding its chosen experts. Requires careful load balancing. Critical for serving big MoEs efficiently.
+
+Topic: Day 264 — cooda Graphs.
+
+Each Pie Torch op has Python and cooda launch overhead. cooda Graphs capture a sequence of ops once, then replay them with near-zero overhead. Big win for decode (small, repetitive kernels). Used by V L.L.M., Tensor R.T. L.L.M..
+
+Topic: Day 265 — Kernel Fusion.
+
+Merge multiple ops into one cooda kernel — fewer kernel launches, fewer H.B.M. round trips. Examples: fused layer norm+gem, fused Q.K.V. projection, fused gated M.L.P.. Inference engines do this aggressively, often via T.V.M., Triton (the language), or hand written kernels.
+
+Topic: Day 266 — Compilation: Tensor R.T., torch compile, max.
+
+Whole-graph compilation (vs eager execution) lets the engine plan memory layout, fuse kernels, pick optimal algorithms per shape. Tensor R.T. L.L.M. is the apex of this approach. torch compile brings some of these benefits to standard Pie Torch with one decorator.
+
+Topic: Day 267 — Chunked Prefill.
+
+A 32k-token prompt prefill blocks the G.P.U. for hundreds of milliseconds — terrible for other users' decode latency. Chunked prefill breaks the prompt into smaller chunks (for example., 512 tokens) processed across many scheduling steps, interleaved with ongoing decodes. Smooths latency at small throughput cost.
+
+Topic: Day 268 — Speculation + Paged Attention + Continuous Batching.
+
+Modern serving stacks combine all of the above. The result: V L.L.M. with all bells and whistles serves 5–20× more tokens per dollar than the same model under naïve Pie Torch.
+
+Topic: Day 269 — Measuring Performance: T.T.F.T., T.P.O.T., I.T.L..
+
+T.T.F.T. — Time To First Token (prefill latency).
+
+T.P.O.T. — Time Per Output Token (decode latency, average).
+
+I.T.L. — Inter-Token Latency (decode latency, jitter).
+
+Throughput — tokens per second (server-wide).
+
+S.L.O.s typically target T.T.F.T. less than 1s and T.P.O.T. less than 50ms for chatbot U.X.. Reasoning models relax T.P.O.T. but care more about total response time.
+
+Topic: 🛠 Build It — Month 9 hands on.
+
+On your V L.L.M. server from Month 8, enable speculative decoding: --speculative model Qwen/Qwen3-0.5B --num-speculative-tokens 5. Measure T.P.O.T. before and after.
+
+Enable prefix caching (on by default in V L.L.M. v1). Send 100 requests sharing a 2,000-token system prompt. Measure T.T.F.T. for request #1 vs #100. The difference is prefix cache magic.
+
+Try --kv-cache-dtype fp8. Measure max concurrent requests before out of memory — should approximately double.
+
+Hit the server with mixed traffic (short chat, long R.A.G., long generation). Plot T.T.F.T. and T.P.O.T. distributions. You're now reading real serving telemetry.
+
+Deliverable: a perf comparison table — baseline vs each optimization, on a workload that mimics your real use case.
+
+Topic: Day 270 — Recap & "Explain it Back".
+
+Quiz yourself:
+
+Why is the K.V. cache so big, and what's G.Q.A.'s role?
+
+What problem does Flash Attention solve, and how?
+
+Walk through one cycle of speculative decoding.
+
+Why is continuous batching strictly better than static batching?
+
+What are T.T.F.T. and T.P.O.T., and which one matters for chat U.X.?
+
+You now understand the optimization toolbox. Next: how those big models got trained across thousands of G.P.U.s.
+

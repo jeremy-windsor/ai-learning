@@ -1,0 +1,236 @@
+Month 11 — Serving & Autoscaling (Days 301–330)
+
+Goal of this month: Take a working inference engine and turn it into a reliable, scalable, multi tenant production service. By Day 330 you'll understand how to architect a system that serves millions of L.L.M. requests without melting down or blowing the budget.
+
+Section: Week 1 — From Engine to Service.
+
+Topic: Day 301 — Engine vs Service.
+
+An inference engine (V L.L.M., T.G.I.) is a single process. A service is what wraps it: load balancing, autoscaling, observability, auth, rate limiting, retries, multi region failover, model versioning, A B testing. The engine is maybe 20% of the production system.
+
+Topic: Day 302 — The Open A.I.-Compatible A.P.I. Layer.
+
+Almost every serving stack exposes /V one chat completions, /v1/embeddings, /v1/models. This standardization means clients (LangChain, Llama Index, your app) can swap providers trivially. Build your internal A.P.I. to this contract too.
+
+Topic: Day 303 — Nvidia Triton Inference Server (the server, not the language).
+
+Multi-framework, multi-model server. Was the dominant solution before V L.L.M./T.G.I. became L.L.M.-specific. Still used heavily for non-L.L.M. A.I. (vision, embeddings, recommendation) and as a backend for Tensor R.T. L.L.M.. Provides batching, model ensembling, dynamic loading.
+
+Topic: Day 304 — Bento M.L., Ray Serve, K serve, Modal.
+
+General-purpose model serving platforms:
+
+Ray Serve — Python-native, scales horizontally on a Ray cluster. Good for compound A.I. systems (R.A.G. + L.L.M. + reranker as one service).
+
+Bento M.L. — packaging + serving framework with strong D.X..
+
+K serve — Kubernetes-native model serving, the cloud-native standard.
+
+Modal / Replicate / Banana — serverless G.P.U. platforms; you write a function, they handle scaling.
+
+Topic: Day 305 — Choosing Your Serving Architecture.
+
+Single team, single model → just vllm serve behind a load balancer.
+
+Multiple models, multiple teams → K serve or Ray Serve cluster.
+
+Bursty/sporadic traffic → serverless (Modal, Replicate, Bedrock).
+
+Latency-critical at huge scale → custom stack on Tensor R.T. L.L.M. with Nvidia N.I.M. or in-house.
+
+Section: Week 2 — Latency, Throughput, and S.L.O.s.
+
+Topic: Day 306 — The Two Numbers Everyone Cares About.
+
+Latency — how long does one user wait? (T.T.F.T. + T.P.O.T. × tokens.).
+
+Throughput — how many tokens per second can the system generate across all users?
+
+These trade off. Bigger batches → higher throughput, worse latency. Production tuning is choosing the right point on this curve for your workload.
+
+Topic: Day 307 — Define Your S.L.O.s Up Front.
+
+Example chat product:
+
+p50 T.T.F.T. less than 500ms, p99 less than 2s.
+
+p50 T.P.O.T. less than 30ms, p99 less than 80ms.
+
+99.9% availability.
+
+Reasoning workloads (long thinking phases) need different S.L.O.s — total response time within X seconds, regardless of token rate.
+
+Topic: Day 308 — Load Testing.
+
+Use tools like vllm bench, gen A.I. perf, locust, k6. Test with realistic prompt distributions (chat-length vs R.A.G.-length vs code-length skew throughput dramatically). Measure across concurrency levels — find your engine's "knee."
+
+Topic: Day 309 — Latency Budgeting.
+
+For a 1-second S.L.O.: 100ms network + 200ms T.T.F.T. + 30ms × 25 tokens = 950ms. No headroom. Each subsystem (load balancer, gateway, engine, network) needs its own latency budget.
+
+Topic: Day 310 — Tail Latency Is the Real Enemy.
+
+P ninety nine latency is often 10× P fifty in L.L.M. serving. Causes: long prompts (prefill spike), long outputs (one user holding a slot), K.V. cache pressure (eviction), bad node, cold cache, model loading, G.C. pauses. Mitigations: chunked prefill, smarter scheduling, request limits, prewarming.
+
+Section: Week 3 — Scaling Out.
+
+Topic: Day 311 — Horizontal vs Vertical Scaling.
+
+Vertical: bigger G.P.U.. There's a ceiling (B two hundred is the max, for now).
+
+Horizontal: more replicas of the same model server behind a load balancer. Mostly how you scale inference.
+
+Within-replica scaling: tensor/pipeline parallelism inside one replica for huge models that don't fit on one G.P.U..
+
+Topic: Day 312 — Load Balancing Considerations.
+
+Naïve round-robin works but ignores per-replica state. Better: least-pending-tokens or prefix-aware routing — send requests sharing a prefix to the same replica to maximize prefix cache hits. Some products (G.K.E. Inference Gateway, Anyscale Endpoints, Nvidia N.I.M.) do this automatically.
+
+Topic: Day 313 — Autoscaling on G.P.U.s.
+
+Cold-start a 70B model = pull 140 gigabytes of weights + warm caches → minutes, not seconds. So:
+
+Maintain a warm pool of replicas.
+
+Scale on a leading indicator (queue depth, K.V. cache util) not lagging (C.P.U.).
+
+Pre-pull model images to all nodes.
+
+Consider scale-to-1 instead of scale-to-zero for latency sensitive apps.
+
+Topic: Day 314 — Spot/Preemptible G.P.U.s.
+
+50–80% cheaper than on-demand. Risk: 30-second termination notice. Mitigations: graceful drain, checkpointed K.V. cache, request hand-off to other replicas. Worth it for batch / async workloads, risky for latency sensitive synchronous traffic.
+
+Topic: Day 315 — Multi-Region, Multi-Cloud.
+
+Latency to users matters → deploy in multiple regions. G.P.U. availability is unreliable → multi-cloud (A.W.S. + G.C.P. + Azure + Lambda + CoreWeave) hedges supply risk. The added ops complexity is real but increasingly necessary for serious scale.
+
+Topic: Day 316 — Disaggregated Serving in Production (Day 234 revisited).
+
+At very high scale, run a prefill cluster (compute bound, big batch) and a decode cluster (memory bound, smaller batch), shipping K.V. caches between them over fast networking. Pioneered by DeepSeek, Mooncake, Splitwise. Big wins for mixed prompt-length workloads.
+
+Section: Week 4 — Multi-Tenancy, Cost, Observability.
+
+Topic: Day 317 — Multi-Model on One G.P.U..
+
+Several smaller models can share a G.P.U. via:
+
+Time-slicing (M.I.G. on A one hundred/H one hundred, M.P.S.) — partition the G.P.U. into slices.
+
+Adapter swapping (low rah X, V L.L.M. multi-low rah) — one base model, many fine tunes loaded as adapters and routed per request. Hugely cost-effective for SaaS with per-customer fine tunes.
+
+Topic: Day 318 — Token Accounting and Quotas.
+
+Bill / rate-limit by tokens. Track input vs output tokens (output is much more expensive — each token requires a full forward pass). Per-user, per-team, per-A.P.I.-key quotas. Backpressure when limits hit.
+
+Topic: Day 319 — Prompt Caching for Cost.
+
+Open A.I., Anthropic, Google all offer prompt caching at the A.P.I. layer — 50–90% discount on cached tokens. Underlying mechanism: prefix sharing in their inference engines (Day 246). Architect prompts so the long, stable parts come first (system prompt, tool defs, R.A.G. context).
+
+Topic: Day 320 — Cost Modeling.
+
+Per-token pricing × expected Q.P.S. × tokens/request = monthly cost.
+
+Compare to self hosted: G.P.U. $/hr × replica count × hours.
+
+Break-even is usually around millions of tokens/day for popular open weight models.
+
+Don't forget: ops cost, on-call, redundancy. Self-hosting at small scale rarely pencils out.
+
+Topic: Day 321 — Observability: What to Log.
+
+T.T.F.T., T.P.O.T., total latency per request.
+
+Tokens in / tokens out.
+
+K.V. cache utilization, G.P.U. util, G.P.U. memory.
+
+Queue depth, batch size distribution.
+
+Error rates by type (out of memory, timeout, content filter).
+
+Per-user/per-prompt cost and latency.
+
+Output quality (L.L.M. as judge eval pipelines on a sample).
+
+Topic: Day 322 — Tracing and Debugging.
+
+Langfuse, Helicone, Arize, Phoenix, Open L.L.M.etry — observability tools tailored to L.L.M. apps. Capture full prompt/response/tool-call traces. Critical for debugging agent failures and prompt regressions.
+
+Topic: Day 323 — Content Filtering and Safety in Production.
+
+Two layers usually:
+
+Input filter — block obviously harmful prompts before they hit the model.
+
+Output filter — scan generated tokens for P.I.I., harmful content, prompt injection results.
+
+Tools: Llama Guard, Azure A.I. Content Safety, A.W.S. Bedrock Guardrails, Nemo Guardrails. Run them on a smaller/cheaper model.
+
+Topic: Day 324 — Retries, Timeouts, Idempotency.
+
+L.L.M. calls fail (overloaded G.P.U., nan, timeout). Retry with exponential backoff. Timeout generation (cap max output tokens). For agent loops, cap iteration count or token budget. Idempotency keys for non-streaming endpoints.
+
+Topic: Day 325 — Versioning and Rollouts.
+
+Treat models like software — semantic versioning, canary deploys (1%/10%/50%/100%), automated regression suites, instant rollback. Every model swap is a behavior change for users; treat accordingly.
+
+Section: Week 5 — Patterns and the Real World.
+
+Topic: Day 326 — The Modern L.L.M. App Architecture.
+
+Topic: Day 327 — Compound Systems Are the Norm.
+
+A "Chat G.P.T." today is rarely one model call. It's: classifier → router → maybe tools → maybe R.A.G. → maybe a reasoning model → final formatting model → safety filter. Compound A.I. systems (Berkeley term) are how production L.L.M. apps actually work. Your serving infra needs to support them — Ray Serve, LangGraph, custom orchestration.
+
+Topic: Day 328 — Caching at Every Layer.
+
+C.D.N. for static prompt templates / responses to F.A.Q. questions.
+
+Semantic cache: if a new query is ≈ a past query, return the cached answer.
+
+K.V./prefix cache inside the engine.
+
+Embedding cache for R.A.G..
+
+Each layer reduces cost and latency further down.
+
+Topic: Day 329 — Capacity Planning.
+
+Inputs: expected Q.P.S., prompt length distribution, output length distribution, model choice. Outputs: # of G.P.U.s, # of replicas, headroom for spikes (typically 2×), cost per month. Re-do this every quarter — usage grows fast.
+
+Topic: 🛠 Build It — Month 11 hands on.
+
+Build a small but real serving stack:
+
+Fast A.P.I. gateway in front of V L.L.M./Ollama. Add A.P.I.-key auth, per-key token quotas (Redis counters), request logging.
+
+Dockerize it. Docker Compose up should bring up Fast A.P.I. + Redis + Ollama.
+
+Wire Langfuse or Phoenix for tracing — capture every prompt/response/latency/cost.
+
+Add an input guardrail (regex or Llama Guard) and an output guardrail (P.I.I. scanner).
+
+Load-test with k6 or locust at 1, 10, 100 concurrent users. Find your knee. Set S.L.O.s accordingly.
+
+Bonus: deploy to a single Kubernetes node (kind or k3s) with K serve or a simple Deployment + Service.
+
+Deliverable: a running compose stack + a perf report + a read me that any teammate can Docker Compose up.
+
+Topic: Day 330 — Recap & "Explain it Back".
+
+Quiz yourself:
+
+Difference between an inference engine and an inference service?
+
+Why is G.P.U. autoscaling harder than C.P.U. autoscaling?
+
+What's a compound A.I. system, and why does it matter for serving?
+
+Where in your stack should prompt caching live?
+
+Why do output tokens cost more than input tokens?
+
+You can now design real systems. Last month: the ecosystem and what's coming.
+

@@ -1,0 +1,196 @@
+Month 10 — Distributed Training (Days 271–300)
+
+Goal of this month: Understand how a 70B–600B model is trained across thousands of G.P.U.s without falling over. By Day 300 you'll be able to explain D.D.P., F.S.D.P., zero stages, tensor parallelism, pipeline parallelism, and 3D parallelism — the recipe behind every frontier model.
+
+Section: Week 1 — Why Distribute?.
+
+Topic: Day 271 — The Two Reasons We Distribute Training.
+
+Speed — N G.P.U.s train approximately N× faster (in theory).
+
+Capacity — the model + gradients + optimizer state don't fit on one G.P.U..
+
+Often both apply. Frontier training uses 10,000+ G.P.U.s for both reasons combined.
+
+Topic: Day 272 — The Memory Anatomy of Training.
+
+Per parameter (with Adam W in mixed precision):
+
+2 bytes weights (B.F. sixteen).
+
+2 bytes gradients (B.F. sixteen).
+
+4 bytes master weights (F.P. thirty two).
+
+4 bytes Adam first moment (F.P. thirty two).
+
+4 bytes Adam second moment (F.P. thirty two).
+
+= 16 bytes per parameter for state alone. Plus activations (depends on batch × sequence length × layers — often dominant). A 7B model needs approximately 112 gigabytes just for state. Doesn't fit on a 80 gigabytes H one hundred.
+
+Topic: Day 273 — Collective Communication 101.
+
+Distributed training is built on a few primitives implemented by N.C.C.L.:
+
+broadcast — one G.P.U.'s tensor → all G.P.U.s.
+
+reduce — all G.P.U.s' tensors → summed on one G.P.U..
+
+all reduce — all G.P.U.s' tensors → summed, copy on every G.P.U..
+
+all-gather — concat tensors from every G.P.U. → copy on every G.P.U..
+
+reduce scatter — sum, then split slices to different G.P.U.s.
+
+The art of distributed training is choosing which primitive happens when.
+
+Topic: Day 274 — Latency vs Bandwidth in Collectives.
+
+N.C.C.L. all reduce on 8 G.P.U.s over N.V. Link takes microseconds for small tensors, milliseconds for big ones. Across nodes via InfiniBand, it's 10–100× slower. Communication overhead is the gravity that distributed training fights.
+
+Section: Week 2 — Data Parallelism (D.D.P.).
+
+Topic: Day 275 — Distributed Data Parallel (D.D.P.) — The Easy Mode.
+
+Copy the entire model + gradients + optimizer state to each G.P.U.. Each G.P.U. processes a different batch slice. After the backward pass, all reduce the gradients so every G.P.U. has the same average. Take an optimizer step. Repeat.
+
+Topic: Day 276 — D.D.P. Pros and Cons.
+
+Pros: simple, scales linearly with G.P.U. count up to communication limits. Cons: the entire model + optimizer state lives on every G.P.U.. A 70B model = 1.1 terabytes of state per G.P.U. = impossible. D.D.P. alone tops out around 10B params.
+
+Topic: Day 277 — Gradient Accumulation.
+
+Use micro-batches to simulate a larger global batch without more memory: process 4 small batches, accumulate gradients, do one optimizer step. Standard trick to combine with any parallelism strategy.
+
+Topic: Day 278 — Gradient Checkpointing (Activation Recomputation).
+
+Activations can dominate training memory. Trade compute for memory: don't save all activations during forward; instead, recompute them during backward. approximately 30% slowdown, often 5–10× memory reduction. Universal in modern training.
+
+Section: Week 3 — zero and F.S.D.P..
+
+Topic: Day 279 — The Insight Behind zero.
+
+D.D.P. wastes memory: every G.P.U. holds the same optimizer state, gradients, and weights. What if we shard them across G.P.U.s and only gather what's needed when needed? That's zero (Zero Redundancy Optimizer), from Microsoft DeepSpeed (2019).
+
+Topic: Day 280 — zero Stage 1: Shard Optimizer States.
+
+Each G.P.U. only holds 1/N of the optimizer states. Gradients still all-reduced as in D.D.P.. approximately 4× memory reduction for Adam W. Almost no extra communication. Free win.
+
+Topic: Day 281 — zero Stage 2: + Shard Gradients.
+
+Each G.P.U. only ever holds gradients for its slice. Implemented via reduce scatter (instead of all reduce). approximately 8× memory reduction. Slight communication change.
+
+Topic: Day 282 — zero Stage 3: + Shard Weights.
+
+Each G.P.U. holds only its slice of the weights too. During forward/backward, the layer's full weights are temporarily all-gathered just before use, then freed. Linear memory scaling with N G.P.U.s — finally enables 100B+ models with data parallelism alone. More communication overhead, partly hidden by overlap.
+
+Topic: Day 283 — F.S.D.P.: Pie Torch's Native zero three.
+
+Fully Sharded Data Parallel (Meta, 2021) is essentially zero three baked into Pie Torch. By 2024 it's the standard Pie Torch path for large model training. DeepSpeed remains popular but F.S.D.P. is built-in and easier to integrate with torch compile, modern checkpointing, etc.
+
+Topic: Day 284 — Activation Sharding (F.S.D.P.+T.P., zero infinity).
+
+Even with zero three, activations can blow up at long context. Further tricks shard activations across G.P.U.s (sequence parallelism) or offload optimizer states to C.P.U. ram / NVMe (zero infinity). Diminishing returns but enables truly absurd scales.
+
+Section: Week 4 — Model Parallelism: T.P. and P.P..
+
+Topic: Day 285 — When Data Parallelism Isn't Enough.
+
+For very large models, even zero three plus activation tricks isn't enough — or the per-G.P.U. compute becomes too small to be efficient. You need to split the model itself. Two ways to slice:
+
+Topic: Day 286 — Tensor Parallelism (T.P.): Split Within a Layer.
+
+Split each weight matrix across G.P.U.s (for example., split a 4096×4096 matmul into 4 G.P.U.s each doing 4096×1024). Each forward pass requires an all reduce inside every layer. Very communication-heavy — only viable across G.P.U.s with N.V. Link-class bandwidth (within a single node, typically). Also called Megatron-style parallelism (Nvidia paper).
+
+Topic: Day 287 — Pipeline Parallelism (P.P.): Split Between Layers.
+
+Layers 1–20 on G.P.U. 0, 21–40 on G.P.U. 1, etc. Tokens flow through. Communication is just sending activations between adjacent stages — much less than T.P.. Pipeline bubbles (idle time at start/end of each batch) hurt efficiency; clever scheduling (1F1B, GPipe, Megatron-L.M. interleaved) reduces but doesn't eliminate them. Works across slower interconnects.
+
+Topic: Day 288 — Expert Parallelism (E.P.) for M.O.E..
+
+For mixture of experts models, route each token to the G.P.U.s holding its chosen experts. Requires an all-to-all collective (every G.P.U. sending a slice of tokens to every other). Load balancing is critical — bad routing kills throughput. Used by Mixtral, DeepSeek, G.P.T. four (rumored).
+
+Topic: Day 289 — Sequence Parallelism (S.P.).
+
+Shard the sequence dimension across G.P.U.s for layers that are otherwise data-replicated (layer norm, dropout). Saves activation memory at long context. Standard in modern Megatron and F.S.D.P..
+
+Topic: Day 290 — Context Parallelism / Ring Attention.
+
+For very long contexts (1M+ tokens), shard the attention computation itself across G.P.U.s in a ring pattern, passing K/V chunks around. Enables training on sequences too long to fit on any single G.P.U.. Used for Gemini 1M-token context, Llama 4, etc.
+
+Section: Week 5 — 3D Parallelism and DeepSpeed.
+
+Topic: Day 291 — Combining All Three: 3D Parallelism.
+
+Frontier training uses D.P. × T.P. × P.P. simultaneously. For example, a 70B run on 1024 H100s might use:
+
+T.P.=8 (within-node, N.V. Link).
+
+P.P.=8 (across nodes, InfiniBand).
+
+D.P.=16 (replicated training across pods).
+
+Total: 8 × 8 × 16 = 1024 G.P.U.s. Each axis is tuned to a different bandwidth tier of the network.
+
+Topic: Day 292 — DeepSpeed.
+
+Microsoft's training library. Pioneered zero. Provides zero-1/2/3, pipeline parallelism, M.O.E. training, zero infinity, zero-Offload, and more. Still widely used (especially in HuggingFace/Accelerate stacks). F.S.D.P. overlaps in functionality and is preferred when "Pie Torch-native" matters.
+
+Topic: Day 293 — Megatron-L.M..
+
+Nvidia's training framework. Source of tensor parallelism, sequence parallelism, distributed optimizer, and many of the tricks now in V L.L.M. and Tensor R.T. L.L.M.. Often combined with DeepSpeed (Megatron-DeepSpeed) for big training runs.
+
+Topic: Day 294 — Nemo, Axolotl, Colossal-A.I., Llama Factory.
+
+Higher-level frameworks that wrap Pie Torch+F.S.D.P./DeepSpeed/Megatron with sensible defaults. Axolotl and Llama Factory dominate the open source fine tuning world; Nemo is Nvidia's enterprise stack; Colossal-A.I. is a strong open competitor.
+
+Topic: Day 295 — How a Frontier Training Run Actually Looks.
+
+10,000–100,000 G.P.U.s.
+
+Months of compute.
+
+Continuous monitoring; failures every few hours.
+
+Checkpoint every approximately 30 min (TBs per checkpoint).
+
+Loss curves on a dashboard, watched 24/7.
+
+Pre-planned data shuffling, learning rate schedule, batch size warmup.
+
+Spike detection → rollback → skip bad data → resume.
+
+This is closer to running a particle accelerator than typical software work.
+
+Topic: Day 296 — The Engineering of Reliability.
+
+Network errors, G.P.U. memory errors, nan losses, N.C.C.L. hangs, bad nodes. Tools: Pie Torch Distributed Elastic (auto-restart), E.C.M.P. aware schedulers, silent data corruption (S.D.C.) detectors. Meta's Llama 3 paper documented 419 hardware interruptions in a 54-day run.
+
+Topic: Day 297 — Distillation as a Training Strategy.
+
+Once you have a giant trained model, you can train smaller models to mimic it (Day 148). Distillation is now a major part of the pipeline — Llama three.2 small models, Qwen-2.5 small models, gpt-4o-mini and many others are fundamentally distilled.
+
+Topic: Day 298 — R.L.H.F. Training Infrastructure.
+
+R.L.H.F./D.P.O./R.L. on reasoning has its own distributed training pain. You may need to keep 4 models live (policy, reference, reward, value), run inference and training in the same loop, and synchronize across thousands of G.P.U.s. Frameworks: T.R.L., OpenRLHF, veRL, Nemo-Aligner.
+
+Topic: Day 299 — Continuous / Online Training.
+
+Some labs continuously update their models on new data, A B test variants, and ship updates daily. The training infrastructure starts to look like a C.I. C.D. pipeline. Expect this to become more common as inference-derived data improves base models.
+
+Topic: Day 300 — Recap & "Explain it Back".
+
+Quiz yourself:
+
+What memory does training need that inference doesn't?
+
+Walk through zero stages 1, 2, 3.
+
+What's the difference between tensor parallelism and pipeline parallelism, and where does each excel?
+
+What is 3D parallelism?
+
+Why does training a frontier model require an entire S.R.E. / H.P.C. team?
+
+You now know how the model was built. Final stretch: how it gets to users at scale.
+

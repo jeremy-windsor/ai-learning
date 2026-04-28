@@ -1,0 +1,43 @@
+AI / LLM Training Guide — 365 Days
+
+A year-long, high-level, low-math training curriculum to help you understand and explain how modern AI and Large Language Models (LLMs) actually work — from the 1950s symbolic era through to today's GPU-accelerated inference servers like vLLM, Ollama, and OpenAI's stack.
+
+Goal: When someone asks you "How does Ollama / Qwen / OpenAI work?" — you can explain it confidently, end-to-end, without hand-waving.
+
+Section: How to Use This Guide.
+
+One topic per day, approximately 5–15 minutes of reading.
+
+Each month builds on the last. Don't skip ahead — Month 8 (inference engines) only makes sense once you understand Month 6 (hardware) and Month 7 (quantization).
+
+At the end of every month there's a "Explain it Back" checklist — questions you should be able to answer out loud, in plain English, to a non-technical coworker.
+
+Math is kept minimal. Where a concept requires a formula, it's stated in one line and then explained in words.
+
+Section: Curriculum Map.
+
+Section: The 5 Questions This Guide Will Let You Answer.
+
+"How does an LLM actually generate text?" — tokenization → embedding → transformer layers → next-token probability → sampling → repeat. (Months 2, 3, 9).
+
+"Why do you need a GPU?" — matrix math + memory bandwidth + VRAM holds the weights and the KV cache. (Months 6, 7, 9).
+
+"How does Ollama run a model on my laptop?" — quantized GGUF weights + llama.cpp inference engine + CPU/GPU offload. (Months 7, 8).
+
+"How does OpenAI serve millions of users?" — vLLM-style continuous batching + PagedAttention + tensor parallelism across many GPUs + autoscaling fleets. (Months 8, 9, 10, 11).
+
+"What's the difference between training and inference?" — Training is a months-long, thousands-of-GPU job that makes the weights. Inference is using those frozen weights to answer one prompt. (Months 4, 10 vs Months 8, 9).
+
+Section: Required Background.
+
+None. If you can read JSON and have used ChatGPT once, you're qualified.
+
+Section: Recommended (Optional) Hands-On Tools.
+
+Ollama — run a small Qwen or Llama model on your own machine starting around Month 8.
+
+Hugging Face — browse model cards starting Month 4.
+
+A cloud GPU (RunPod, Lambda, Vast.ai) — try vllm serve once you reach Month 8.
+
+Last updated: April 2026
