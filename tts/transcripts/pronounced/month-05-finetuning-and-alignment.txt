@@ -1,0 +1,208 @@
+Month 05 — fine tuning & Alignment (Days 121–150)
+
+Goal of this month: Understand how a raw base model becomes Chat G.P.T., Claude, or qwen3:8b-instruct. By Day 150 you'll know what S.F.T., R.L.H.F., D.P.O., low rah, and Q low rah mean — and which one you would use to customize a model for your team.
+
+Section: Week 1 — From Base Model to Assistant.
+
+Topic: Day 121 — Why a Base Model Isn't an Assistant.
+
+Prompt a base model with "What is the capital of France?" and you may get back "What is the capital of Germany? What is the capital of Spain?" — it just continues the pattern. Base models are autocomplete, not assistants.
+
+Topic: Day 122 — The Chat Template.
+
+Instruct/chat models are trained on conversations formatted with special tokens marking roles. Example (ChatML, used by Qwen and Open A.I.):
+
+Llama 3 uses start_header_iduserend_header_id etc. Get the template wrong → garbage output. Hugging Face stores it in tokenizer_config.json.
+
+Topic: Day 123 — Supervised fine tuning (S.F.T.).
+
+Take the pretrained base model and continue training it on a curated dataset of (prompt, ideal response) pairs. Same loss (next token prediction) but only on the assistant's tokens. Dataset sizes: 10k–1M examples. This single step turns a base model into a usable assistant.
+
+Topic: Day 124 — Where S.F.T. Data Comes From.
+
+Human contractors writing high-quality responses.
+
+Distillation from a stronger model (use G.P.T. four to generate training data for your smaller model).
+
+Public datasets: Alpaca, Dolly, OpenAssistant, ShareGPT, UltraChat.
+
+Domain-specific (medical, legal, code) datasets.
+
+Topic: Day 125 — The Limits of S.F.T. Alone.
+
+S.F.T. teaches the model how to respond. But it can't easily teach preferences — "be more concise," "refuse harmful requests," "show your reasoning." For preferences you need a different signal: comparisons.
+
+Section: Week 2 — R.L.H.F. and Its Successors.
+
+Topic: Day 126 — Reinforcement Learning from Human Feedback (R.L.H.F.).
+
+The technique that made Chat G.P.T. possible. Three stages:
+
+S.F.T. (Day 123).
+
+Reward model: humans rank multiple responses to the same prompt; train a separate model to predict the rank.
+
+R.L. fine tuning (P.P.O. algorithm): the L.L.M. generates responses, the reward model scores them, the L.L.M. is updated to get higher scores — while a K.L. penalty prevents it from drifting too far from the S.F.T. model.
+
+Topic: Day 127 — Why R.L.H.F. Is Hard.
+
+P.P.O. is finicky — unstable, hyperparameter-sensitive, requires keeping 4 models in memory simultaneously (policy, reference, reward, value). Many teams spent months getting it to work. There had to be a simpler way.
+
+Topic: Day 128 — Direct Preference Optimization (D.P.O.).
+
+Stanford 2023: prove that you can skip the reward model and P.P.O. entirely. Just take preference pairs (prompt, preferred, rejected) and train the L.L.M. directly with a clever loss function. Same quality, far simpler. D.P.O. replaced P.P.O. at most labs by 2024.
+
+Topic: Day 129 — D.P.O. Variants.
+
+I.P.O., K.T.O., O.R.P.O., SimPO — newer variants tweaking D.P.O.'s loss for stability or removing the need for paired data. K.T.O. only needs (prompt, response, good/bad) labels — much easier to collect.
+
+Topic: Day 130 — Constitutional A.I. (Anthropic).
+
+Anthropic's twist: instead of (only) human preferences, use a written constitution ("be helpful, be harmless, be honest, refuse to help with weapons.") and have the model critique and revise its own outputs against those principles. Scales beyond what humans can label. Foundational to Claude.
+
+Topic: Day 131 — R.L.A.I.F. (R.L. from A.I. Feedback).
+
+Use a strong model (for example., G.P.T. four) to generate the preference labels instead of humans. Cheaper, faster, almost as good. Most modern alignment uses some mix of human + A.I. feedback.
+
+Topic: Day 132 — Reasoning Models: R.L. on Chain-of-Thought.
+
+Open A.I. o1 (Sept 2024) and DeepSeek R one (Jan 2025) showed that R.L. on verifiable tasks (math problems with known answers, code with passing tests) teaches the model to produce long internal reasoning before answering. The model essentially learns to "think harder when it helps." This is the basis of every "reasoning" model.
+
+Section: Week 3 — Parameter-Efficient fine tuning (P.E.F.T.).
+
+Topic: Day 133 — The Problem with Full fine tuning.
+
+Full fine tuning a 70B model requires 16+ G.P.U.s and creates a 140 gigabytes checkpoint per fine tune. If you want 50 specialized variants for 50 customers, that's 7 terabytes of weights. Not practical.
+
+Topic: Day 134 — low rah (Low-Rank Adaptation, 2021).
+
+The breakthrough idea: freeze the original weights, and add small low rank update matrices alongside them. Instead of updating a 4096×4096 matrix (16M params), update two 4096×r and r×4096 matrices where r might be 8 or 16 — a few hundred kilobytes instead of 64 megabytes.
+
+Topic: Day 135 — Why low rah Works So Well.
+
+The empirical finding: fine tuning updates are intrinsically low rank. You don't need to change the whole weight matrix to teach a model a new domain — a small low rank delta is enough. low rah captures 95%+ of full fine tuning quality at less than 1% of the parameters.
+
+Topic: Day 136 — Q low rah (2023).
+
+Combine low rah with 4-bit quantization of the base model. The frozen base model is loaded in 4 bits (saves 4× memory), and you train tiny low rah adapters in B.F. sixteen on top. A 70B model that needed 16 G.P.U.s for full fine tuning now fine tunes on a single 48 gigabytes G.P.U.. Game-changing for individuals and small teams.
+
+Topic: Day 137 — Adapter Hot-Swapping.
+
+Because low rah adapters are tiny (10–500 megabytes each), one server can hold a base model and dynamically swap in different adapters per request. Tools like low rah X and V L.L.M.'s multi-low rah turn this into a multi tenant production capability.
+
+Topic: Day 138 — Other P.E.F.T. Methods.
+
+Prefix tuning, prompt tuning — learn soft "virtual tokens" prepended to every prompt.
+
+IA³, BitFit — even smaller parameter footprints.
+
+low rah/Q low rah dominate in practice because the ecosystem (P.E.F.T. library, V L.L.M., axolotl) supports them best.
+
+Section: Week 4 — Doing It Yourself.
+
+Topic: Day 139 — When You Should Fine-Tune (and When You Shouldn't).
+
+Don't fine tune for: adding facts (use R.A.G.), small style tweaks (use system prompt + few shot), tasks the base model already does well. Do fine tune for: enforcing a structured output format reliably, teaching a domain vocabulary/style at scale, improving small-model performance on a narrow task, distilling a big model's behavior into a small one.
+
+Topic: Day 140 — R.A.G. vs fine tuning vs Both.
+
+R.A.G. (retrieval augmented Generation) injects fresh facts into the prompt. Use for changing knowledge.
+
+fine tuning changes the model's behavior. Use for teaching skills or style.
+
+They compose well — fine tune for the format/style, retrieve for the facts.
+
+Topic: Day 141 — The fine tuning Stack.
+
+Hugging Face transformers + P.E.F.T. + T.R.L. — the standard library combo.
+
+Axolotl — a yammel-config wrapper that handles 90% of cases for you.
+
+Unsloth — heavily optimized fine tuning, 2× faster on consumer G.P.U.s.
+
+Open A.I. / Together / Fireworks fine tuning A.P.I.s — managed services if you don't want infrastructure.
+
+Topic: Day 142 — Evaluation: The Hardest Part.
+
+After fine tuning, did you make it better? Common approaches:
+
+Held-out test set with metrics (accuracy, blue, rouge, exact match).
+
+L.L.M. as judge — use G.P.T. four/Claude to score outputs.
+
+Human eval — slow but the gold standard.
+
+Public benchmarks — M.M.L.U., G.S.M. eight K, Human Eval, M.T. Bench, IFEval.
+
+A model that scores higher on your benchmark but feels worse subjectively is a sign you're overfitting to the metric.
+
+Topic: Day 143 — Catastrophic Forgetting.
+
+Fine-tune too aggressively and the model forgets what it knew. Mitigations: lower learning rate, mix in some original-domain data, use low rah (only changes a small fraction).
+
+Topic: Day 144 — Safety Tuning and Jailbreaks.
+
+Aligned models refuse harmful requests. Attackers find prompt patterns ("D.A.N.," "developer mode," "grandmother's bedtime story") that bypass refusals. Labs continuously red-team and patch. There's no perfect solution — alignment is ongoing.
+
+Section: Week 5 — wrap up.
+
+Topic: Day 145 — The Full Pipeline, end to end.
+
+Pretraining (Month 4) → base model.
+
+S.F.T. → instruction-following model.
+
+Preference tuning (D.P.O./R.L.H.F.) → helpful, harmless, honest.
+
+(Optional) Reasoning R.L. → o1/R one-style thinking.
+
+(Optional) Domain fine tuning (low rah) → your specialized model.
+
+Quantization (Month 7) → deployable model.
+
+Inference engine (Month 8) → serving.
+
+Topic: Day 146 — Why "open weight" Doesn't Mean "open source".
+
+You get the weights but rarely the training data, training code, or R.L.H.F. data. So you can run, fine tune, and study the model — but you can't reproduce it from scratch. Truly open projects (olmo, L.L.M. three sixty, Pythia) publish everything; most "open" models don't.
+
+Topic: Day 147 — Synthetic Data.
+
+Top labs increasingly train (and fine tune) on data generated by other models. Microsoft's Phi, Nvidia's Nemotron, and many recent Qwen/DeepSeek improvements lean on this. Concerns about "model collapse" from too much synthetic data exist but haven't materialized yet at the frontier.
+
+Topic: Day 148 — Distillation.
+
+Take a strong "teacher" model, generate millions of (prompt, response) pairs, train a smaller "student" model to imitate them. Llama three point two one B, Qwen two point five, zero point five B, and most "small but smart" models are distilled from larger siblings. This is how a 3 gigabytes model can feel surprisingly capable.
+
+Topic: Day 149 — The Future of Alignment.
+
+Active research: process reward models (reward each reasoning step, not just the answer), scalable oversight (humans supervising models smarter than themselves), interpretability (can we read what's in the weights?). Critical for safety as capabilities grow.
+
+Topic: 🛠 Build It — Month 5 hands on.
+
+Pick a tiny base model (Qwen two point five, zero point five B or Llama three point two one B) and run a Q low rah fine tune on a small dataset (for example., 1k rows of Alpaca) using Unsloth (pip install unsloth) — fits on a free Colab T four.
+
+Compare base vs fine tuned outputs on 10 held-out prompts. Use a stronger model (Claude/G.P.T. four oh) as a judge to score them — that's your first eval harness.
+
+Save the low rah adapter ( approximately 50 megabytes), reload it, run inference. You've now done end to end P.E.F.T..
+
+Try D.P.O. on a preference dataset (trl library, approximately 50 lines of code).
+
+Deliverable: a fine tuned.safetensors low rah adapter + a side-by-side eval table.
+
+Topic: Day 150 — Recap & "Explain it Back".
+
+Quiz yourself:
+
+What three stages does R.L.H.F. have?
+
+Why did D.P.O. replace P.P.O.?
+
+What does low rah actually freeze and what does it train?
+
+When should you choose fine tuning over R.A.G., and vice versa?
+
+What's a chat template and why does getting it wrong break things?
+
+Halfway there. You now understand how models are made and shaped. The second half of the year is about how we run them.
+

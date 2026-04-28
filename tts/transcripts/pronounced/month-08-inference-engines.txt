@@ -1,0 +1,224 @@
+Month 08 — Inference Engines (Days 211–240)
+
+Goal of this month: Understand the software that actually runs a trained model — from Ollama run on your laptop to vllm serve on a 8×H one hundred box. By Day 240 you'll be able to recommend the right engine for any deployment scenario.
+
+Section: Week 1 — Why Inference Needs Its Own Software.
+
+Topic: Day 211 — Training Frameworks Aren't Inference Engines.
+
+Pie Torch is fantastic for training but inefficient for serving — too much Python overhead, no batching strategy, no quantization-aware kernels, no streaming output. Specialized inference engines rewrote everything for one job: serve tokens as fast and cheaply as possible.
+
+Topic: Day 212 — The Two Phases of Inference: Prefill vs Decode.
+
+Every request has two distinct workloads:
+
+Prefill — process the entire prompt in one big parallel matmul. Compute-bound. Fast per token.
+
+Decode — generate one token at a time, autoregressively. Memory-bandwidth bound. Slow per token.
+
+Different optimizations apply to each. Modern engines treat them separately (see "disaggregated serving," Day 234).
+
+Topic: Day 213 — The K.V. Cache (full deep dive in Month 9).
+
+During decode, instead of recomputing attention over the entire growing sequence, the engine caches the K and V vectors of every past token. Each new token only computes its own Q, K, V and attends against the cache. Without K.V. caching, generation would be O(n²) per token instead of O(n). Every modern engine does this.
+
+Topic: Day 214 — Streaming Output.
+
+Tokens are generated one at a time, so it's natural to stream them to the client as they're produced (Server-Sent Events / WebSocket). Perceived latency drops dramatically — users see the first word in 100ms instead of waiting 5s for the full response.
+
+Topic: Day 215 — The Engine Landscape (the players).
+
+llama dot C.P.P. / Ollama / L.M. Studio — local, C.P.U.+G.P.U., G.G.U.F..
+
+V L.L.M. — high-throughput Python/cooda server. Most popular open source.
+
+Tensor R.T. L.L.M. — Nvidia's max-performance C++/cooda engine.
+
+T.G.I. (Text Generation Inference, Hugging Face) — production-ready Rust/Python.
+
+S.G. Lang — fast structured-generation server, growing rapidly.
+
+M.L.C. L.L.M. — cross platform (web, mobile) via T.V.M..
+
+X Llama V two — fast single-G.P.U. consumer inference.
+
+M.L.X. — Apple's framework, fast on M series Macs.
+
+Section: Week 2 — Local Inference: llama dot C.P.P. and Ollama.
+
+Topic: Day 216 — llama dot C.P.P.: The Project That Started It All.
+
+Georgi Gerganov, 2023. Ported Meta's Llama to plain C++ so it could run on a MacBook C.P.U.. Within months it supported G.P.U. acceleration, every model architecture, every quantization scheme. Today it's the engine inside Ollama, L.M. Studio, KoboldCpp, Jan, and dozens more.
+
+Topic: Day 217 — How llama dot C.P.P. Works.
+
+Loads a G.G.U.F. file (weights + tokenizer + chat template + metadata).
+
+Runs custom C.P.U./cooda/Metal/Vulkan/rock-em kernels — no Pie Torch.
+
+Splits layers between G.P.U. V ram and C.P.U. ram (n_gpu_layers) — partial offload lets you run models larger than your V ram.
+
+Exposes an H.T.T.P. server (llama-server) with an Open A.I. compatible A.P.I..
+
+Topic: Day 218 — Ollama: The Friendly Wrapper.
+
+Ollama (2023) wraps llama dot C.P.P. behind a Docker-like U.X.:
+
+It manages model downloads, model versioning (Modelfiles, like Dockerfiles), automatic G.P.U./C.P.U. placement, and a local rest A.P.I. on localhost:11434. This is how non-experts run L.L.M.s locally.
+
+Topic: Day 219 — How Ollama Picks Quantization.
+
+By default Ollama pull qwen3:8b grabs the Q four K M G.G.U.F. — the sweet spot most users want. You can request qwen3:8b-instruct-q8_0,:fp16, etc. Tags map directly to G.G.U.F. files on Ollama.com/library.
+
+Topic: Day 220 — When Ollama / llama dot C.P.P. Is the Right Choice.
+
+Local development on laptops or workstations.
+
+Privacy-sensitive workloads (data never leaves the machine).
+
+Single-user / low-concurrency.
+
+Mac users (Metal acceleration is excellent).
+
+Edge/embedded deployments.
+
+Topic: Day 221 — When Ollama / llama dot C.P.P. Is Not the Right Choice.
+
+Serving many concurrent users (no continuous batching → throughput collapses).
+
+Production at scale.
+
+Multi-G.P.U. tensor parallel inference (limited support).
+
+Fine-tuned low rah hot-swapping.
+
+For these → V L.L.M., T.G.I., Tensor R.T. L.L.M..
+
+Section: Week 3 — Production Inference: V L.L.M..
+
+Topic: Day 222 — V L.L.M.: The open source Workhorse.
+
+Born at U.C. Berkeley, 2023. Now the de facto open source standard for production L.L.M. serving. Used by everyone from indie startups to L.M. Sys Arena. Core innovation: Paged Attention (Day 223).
+
+Topic: Day 223 — Paged Attention.
+
+The K.V. cache is huge and grows per request. Naïve allocation wastes massive amounts of V ram (over-allocate for max possible length, fragmentation). V L.L.M. borrowed virtual memory's paging idea: split the K.V. cache into fixed size blocks (for example., 16 tokens each), allocate them on demand, share blocks across requests with the same prefix. Result: 2–4× more throughput than the previous best engines just from better memory management.
+
+Topic: Day 224 — Continuous Batching.
+
+Old "static" batching: wait for all requests in a batch to finish before starting new ones. If one request needs 1000 tokens and another needs 10, the G.P.U. sits idle. Continuous batching (V L.L.M.) adds and removes requests from the running batch every step. The G.P.U. stays at near-100% utilization. Single biggest throughput win in modern serving.
+
+Topic: Day 225 — Prefix Caching.
+
+If two requests share a prefix (system prompt, R.A.G. context, few shot examples), there's no reason to recompute the K.V. cache for that prefix — keep it cached and reuse. V L.L.M.'s automatic prefix caching can reduce T.T.F.T. (time-to-first-token) by 5–10× for repeated system prompts.
+
+Topic: Day 226 — Tensor Parallelism in V L.L.M..
+
+For models too big for one G.P.U., V L.L.M. shards each weight matrix across N G.P.U.s (--tensor parallel size 4). The matmul becomes a synchronized cross-G.P.U. operation. Requires fast interconnect (N.V. Link). Standard for serving 70B+ models.
+
+Topic: Day 227 — Quantization in V L.L.M..
+
+V L.L.M. supports B.F. sixteen (default), F.P. eight (great on H one hundred), A.W.Q., G.P.T.Q., and various 4-bit kernels. F.P. eight on H one hundred is often the production sweet spot — half the V ram, near-B.F. sixteen quality, fastest tensor core path.
+
+Topic: Day 228 — Running V L.L.M..
+
+Exposes an Open A.I. compatible rest A.P.I. on port 8000. Drop-in replacement for openai.com/v1. This pattern (an Open A.I. compatible server) is the de facto A.P.I. standard in 2026.
+
+Topic: Day 229 — V L.L.M. Architecture in 30 Seconds.
+
+Scheduler decides which requests run each step (prefill vs decode, prefix caching, fairness).
+
+Worker executes the model on the G.P.U.(s).
+
+K.V. manager handles Paged Attention blocks.
+
+A.P.I. server speaks Open A.I. protocol, streams tokens.
+
+Section: Week 4 — Tensor R.T. L.L.M., T.G.I., S.G. Lang, Others.
+
+Topic: Day 230 — Tensor R.T. L.L.M..
+
+Nvidia's flagship inference engine. Compiles the model into optimized cooda kernels ahead of time (per G.P.U. S.K.U., per quantization, per batch shape). Result: typically 1.5–2× faster than V L.L.M. on the same hardware. Cost: more complex build process, less flexibility, Nvidia-only. Used by Nvidia N.I.M., Triton, and many enterprise stacks.
+
+Topic: Day 231 — T.G.I. (Hugging Face Text Generation Inference).
+
+Hugging Face's production server. Rust frontend + Python/cooda backend. Production-ready since 2023, easy deploy via Docker, supports continuous batching, F.P. eight, quantization, multi-low rah. Strong choice if you're already in the H.F. ecosystem.
+
+Topic: Day 232 — S.G. Lang.
+
+Newer (2024) entrant focused on structured generation — Jason-constrained output, multi-turn programs, R.A.G. pipelines. Often beats V L.L.M. on throughput in benchmarks. Innovative scheduling (Radix Attention for prefix sharing, zero-overhead batching). Worth watching.
+
+Topic: Day 233 — DeepSpeed M.I.I., M.L.C. L.L.M., X Llama V two.
+
+DeepSpeed M.I.I. — Microsoft's serving on top of DeepSpeed Inference. Less popular than V L.L.M. nowadays.
+
+M.L.C. L.L.M. — runs models in the browser via Web G.P.U., on iOS, Android, Raspberry Pi. Cross-platform.
+
+X Llama V two — fast single-G.P.U. inference for consumer hardware; loved by the local L.L.M. community.
+
+Topic: Day 234 — Disaggregated Serving (the cutting edge, 2024–2025).
+
+Insight: prefill is compute bound, decode is memory bound. They have different optimal batch sizes, different optimal hardware. Run prefill on one set of G.P.U.s and decode on another, ship the K.V. cache between them. Used by DeepSeek, V L.L.M. v1, and Tensor R.T. L.L.M.. Big throughput wins for long context workloads.
+
+Topic: Day 235 — Choosing an Engine: The Decision Tree.
+
+One user, your laptop → Ollama / L.M. Studio.
+
+Privacy + on-prem, low concurrency → llama dot C.P.P. server.
+
+Mac M series → Ollama or M.L.X..
+
+Open-source production → V L.L.M. (default choice).
+
+Maximum Nvidia performance → Tensor R.T. L.L.M..
+
+H.F. ecosystem comfort → T.G.I..
+
+Heavy structured output / agents → S.G. Lang.
+
+Browser / mobile → M.L.C. L.L.M..
+
+Topic: Day 236 — How Open A.I./Anthropic Probably Do It.
+
+Closed-source, but based on papers and leaks: heavily customized stacks descended from internal forks of V L.L.M./Tensor R.T. L.L.M. ideas, with proprietary kernels, F.P. eight, F.P. four quantization, disaggregated prefill decode, massive tensor + pipeline parallelism, custom networking. The principles are the same as the open stacks — just at much larger scale and with secret sauce.
+
+Topic: Day 237 — The Open A.I. A.P.I. Standard.
+
+Because every engine speaks Open A.I.'s /V one chat completions protocol, you can swap providers (Open A.I. → Anthropic → V L.L.M. → Ollama) by changing a base U.R.L.. This commoditization is one of the most important developments of 2024–2025.
+
+Topic: Day 238 — Speculative Decoding (preview of Month 9).
+
+A small "draft" model proposes 4–8 tokens at a time; the big "target" model verifies them in a single forward pass. If accepted, you got those tokens almost for free. Built into V L.L.M., Tensor R.T. L.L.M., llama dot C.P.P.. 2–3× decode speedup, lossless.
+
+Topic: Day 239 — Tool Calling / Jason Mode.
+
+Modern engines support constrained generation — forcing the model's output to match a Jason schema, regex, or grammar. Done via masking the next token logits at sampling time. Critical for agentic workloads (Month 12). Available in V L.L.M. (outlines, xgrammar), S.G. Lang, llama dot C.P.P. (grammars), T.G.I..
+
+Topic: 🛠 Build It — Month 8 hands on.
+
+Local: install Ollama, Ollama serve, Ollama run qwen3:8b. Hit http://localhost:11434/V one chat completions with curl — confirm the Open A.I. compatible A.P.I. works.
+
+Cloud: rent a single H one hundred or L forty S (RunPod / Vast.ai, approximately $2/hr), pip install vllm, run vllm serve Qwen three eight B instruct. Same Open A.I. A.P.I. on port 8000.
+
+Point the same client code at both endpoints by changing only the base_url. That's the Open A.I.-A.P.I.-as-standard pattern.
+
+Bench both with gen A.I. perf or vllm bench serve at concurrency 1, 8, 32. Watch how Ollama collapses on concurrency while V L.L.M. scales — proof of why you need continuous batching.
+
+Deliverable: a script + benchmark table showing throughput vs concurrency for both engines.
+
+Topic: Day 240 — Recap & "Explain it Back".
+
+Quiz yourself:
+
+What's the difference between prefill and decode, and why does it matter?
+
+What problem does Paged Attention solve?
+
+Why does continuous batching beat static batching?
+
+When would you choose Ollama over V L.L.M., and vice versa?
+
+How does Ollama actually run a model — what's underneath the friendly C.L.I.?
+
+You can now answer "How does Ollama work?" and "How does Open A.I. serve at scale?" in real depth. Next month: the optimization tricks behind every fast engine.
+

@@ -1,0 +1,44 @@
+A.I. / L.L.M. Training Guide — 365 Days
+
+A year-long, high level, low-math training curriculum to help you understand and explain how modern A.I. and Large Language Models (L.L.M.s) actually work — from the 1950s symbolic era through to today's G.P.U.-accelerated inference servers like V L.L.M., Ollama, and Open A.I.'s stack.
+
+Goal: When someone asks you "How does Ollama / Qwen / Open A.I. work?" — you can explain it confidently, end to end, without hand-waving.
+
+Section: How to Use This Guide.
+
+One topic per day, approximately 5–15 minutes of reading.
+
+Each month builds on the last. Don't skip ahead — Month 8 (inference engines) only makes sense once you understand Month 6 (hardware) and Month 7 (quantization).
+
+At the end of every month there's a "Explain it Back" checklist — questions you should be able to answer out loud, in plain English, to a non-technical coworker.
+
+Math is kept minimal. Where a concept requires a formula, it's stated in one line and then explained in words.
+
+Section: Curriculum Map.
+
+Section: The 5 Questions This Guide Will Let You Answer.
+
+"How does an L.L.M. actually generate text?" — tokenization → embedding → transformer layers → next token probability → sampling → repeat. (Months 2, 3, 9).
+
+"Why do you need a G.P.U.?" — matrix math + memory bandwidth + V ram holds the weights and the K.V. cache. (Months 6, 7, 9).
+
+"How does Ollama run a model on my laptop?" — quantized G.G.U.F. weights + llama dot C.P.P. inference engine + C.P.U./G.P.U. offload. (Months 7, 8).
+
+"How does Open A.I. serve millions of users?" — V L.L.M.-style continuous batching + Paged Attention + tensor parallelism across many G.P.U.s + autoscaling fleets. (Months 8, 9, 10, 11).
+
+"What's the difference between training and inference?" — Training is a months-long, thousands-of-G.P.U. job that makes the weights. Inference is using those frozen weights to answer one prompt. (Months 4, 10 vs Months 8, 9).
+
+Section: Required Background.
+
+None. If you can read Jason and have used Chat G.P.T. once, you're qualified.
+
+Section: Recommended (Optional) hands on Tools.
+
+Ollama — run a small Qwen or Llama model on your own machine starting around Month 8.
+
+Hugging Face — browse model cards starting Month 4.
+
+A cloud G.P.U. (RunPod, Lambda, Vast.ai) — try vllm serve once you reach Month 8.
+
+Last updated: April 2026
+
