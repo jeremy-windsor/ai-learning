@@ -89,8 +89,10 @@ Alternative scheme: add a position-dependent bias to attention scores. Strong lo
 - GPT-4 (2023): 8k → 32k → 128k
 - Claude 3 (2024): 200k
 - Gemini 1.5 (2024): 1M+
-- Llama 4 (2025): 10M+
-The growth is enabled by RoPE/ALiBi + memory tricks (Month 9: FlashAttention, paged KV cache).
+- Llama 4 Scout (2025): 10M; Llama 4 Maverick (2025): 1M
+- GPT-5 (2025): 400k (272k input + 128k output)
+- Qwen3.6 / DeepSeek-V4 (2026): up to 1M
+The growth is enabled by RoPE/ALiBi + memory tricks (Month 9: FlashAttention, paged KV cache). Note: practical quality often degrades well before the advertised maximum — "lost in the middle" is real (Month 12, Day 345).
 
 ### Day 84 — Why Long Context Is Hard: Attention Is O(n²)
 Attention computes a score between every pair of tokens. Doubling the context = 4× compute and memory for attention. This is the fundamental scaling wall, and most "long-context" engineering is about working around it.
