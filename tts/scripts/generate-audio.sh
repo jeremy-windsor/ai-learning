@@ -8,16 +8,24 @@ OUTPUT="$2"
 VOICE="${3:-will}"
 DICT_DIR="$(dirname "$0")/.."
 WORK_DIR=$(mktemp -d)
+OPEN_SPEECH_TTS_CMD="${OPEN_SPEECH_TTS_CMD:-/home/jeremy/.codex/skills/openclaw-skills/voice/scripts/tts-open-speech}"
 
 if [ -z "$INPUT" ] || [ -z "$OUTPUT" ]; then
     echo "Usage: $0 <input.txt> <output.mp3> [voice]"
     exit 1
 fi
 
-echo "=== SP Study Guide TTS Generator ==="
+if [ ! -x "$OPEN_SPEECH_TTS_CMD" ]; then
+    echo "Open Speech TTS command not found or not executable: $OPEN_SPEECH_TTS_CMD" >&2
+    echo "Set OPEN_SPEECH_TTS_CMD to the correct command path." >&2
+    exit 1
+fi
+
+echo "=== AI Learning Guide TTS Generator ==="
 echo "Input:  $INPUT"
 echo "Output: $OUTPUT"
 echo "Voice:  $VOICE"
+echo "TTS:    $OPEN_SPEECH_TTS_CMD"
 
 echo "-> Applying pronunciation dictionary..."
 python3 "$DICT_DIR/scripts/apply-pronunciation.py" "$INPUT" "$DICT_DIR/pronunciation.txt" > "$WORK_DIR/pronounced.txt"
@@ -29,7 +37,7 @@ echo "-> Generating audio chunks..."
 for chunk in "$WORK_DIR"/chunk_*.txt; do
     base=$(basename "$chunk" .txt)
     echo "  Processing $base..."
-    kokoro-tts "$(cat "$chunk")" --voice "$VOICE" --format mp3 --output "$WORK_DIR/${base}.mp3"
+    python3 "$OPEN_SPEECH_TTS_CMD" "$(cat "$chunk")" --voice "$VOICE" --format mp3 --output "$WORK_DIR/${base}.mp3"
 done
 
 echo "-> Concatenating..."
