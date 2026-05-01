@@ -54,6 +54,10 @@ None. If you can read JSON and have used ChatGPT once, you're qualified.
 - **[Hugging Face](https://huggingface.co)** — browse model cards starting Month 4.
 - **A cloud GPU** (RunPod, Lambda, Vast.ai) — try `vllm serve` once you reach Month 8.
 
+## Supplemental Resources
+
+- [Complete Roadmap to Become an Agentic AI Engineer.pdf](./Complete%20Roadmap%20to%20Become%20an%20Agentic%20AI%20Engineer.pdf) — downloaded from the shared Google Drive link on 2026-04-30.
+
 ---
 
 *Last updated: April 2026*
