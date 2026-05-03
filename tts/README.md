@@ -2,16 +2,13 @@
 
 Prepare spoken-word audio from the AI learning curriculum.
 
-## Current Decision Point
+## Current State
 
-No audio generation should run until Jeremy approves the approach.
+This folder contains the TTS workflow, generated transcripts, and generated MP3s.
 
-This folder only prepares:
-
-- pronunciation dictionary
-- preprocessing scripts
-- chunking workflow
-- proposed generation pipeline
+- `00-overview` is generated from the repo root `README.md`
+- `month-01` through `month-12` already have generated audio
+- generated MP3s are currently tracked in this repo
 
 ## Voice Settings
 
@@ -46,7 +43,7 @@ CrewAI|Crew A.I.
 
 The dictionary is intentionally case-sensitive. Put longer/compound terms before shorter terms so `OpenAI` becomes `Open A.I.` before the generic `AI` rule runs.
 
-## Proposed Input Files
+## Input Files
 
 The curriculum currently lives at repo root:
 
@@ -65,9 +62,7 @@ The curriculum currently lives at repo root:
 - `month-12-ecosystem-and-future.md`
 - `parsed-links-for-input.md` should stay reference-only unless Jeremy wants a source-notes audio appendix.
 
-## Proposed Output Layout
-
-Recommended:
+## Output Layout
 
 ```text
 tts/audio/
@@ -77,8 +72,6 @@ tts/audio/
   ...
   month-12-ecosystem-and-future.mp3
 ```
-
-Keep generated MP3s out of the first commit unless we explicitly decide to version audio in Git.
 
 ## Pipeline
 
@@ -104,15 +97,12 @@ python3 tts/scripts/apply-pronunciation.py input.txt tts/pronunciation.txt > pro
 python3 tts/scripts/chunk-text.py pronounced.txt --max-chars 2000 --output-dir /tmp/ai-learning-tts --prefix month-01
 ```
 
-### 4. Generate audio only after approval
+### 4. Generate audio
 
-Do **not** run this until Jeremy approves:
+Use the existing wrapper script:
 
 ```bash
-python3 ~/.codex/skills/openclaw-skills/voice/scripts/tts-open-speech \
-  "$(cat /tmp/ai-learning-tts/month-01_001.txt)" \
-  --voice will --format mp3 \
-  --output /tmp/ai-learning-tts/month-01_001.mp3
+tts/scripts/generate-audio.sh tts/transcripts/raw/00-overview.txt tts/audio/00-overview.mp3 will
 ```
 
 ### 5. Concatenate chunks
@@ -140,10 +130,7 @@ Expected style:
 A.I. engineers build L.L.M. systems with R.A.G., A.P.I.s, Jason outputs, Fast A.P.I., Open A.I., Pydantic A.I., and M.C.P.
 ```
 
-## Open Questions
+## Current Scope
 
-1. Should `parsed-links-for-input.md` become an audio appendix, or remain source reference only?
-2. Should generated MP3s be committed to Git, or stored as release/media artifacts?
-3. Should every month be one MP3, or split into week-sized MP3s for easier listening?
-
-My recommendation: **one MP3 per month**, no source appendix audio initially, and keep generated audio out of Git until file sizes are known.
+The current audio set is one MP3 for the overview plus one MP3 per month.
+`parsed-links-for-input.md` remains source reference only.

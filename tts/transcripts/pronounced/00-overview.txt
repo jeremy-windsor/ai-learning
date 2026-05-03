@@ -40,5 +40,9 @@ Hugging Face — browse model cards starting Month 4.
 
 A cloud G.P.U. (RunPod, Lambda, Vast.ai) — try vllm serve once you reach Month 8.
 
+Section: Supplemental Resources.
+
+Complete Roadmap to Become an Agentic A.I. Engineer.pdf — downloaded from the shared Google Drive link on 2026-04-30.
+
 Last updated: April 2026
 
