@@ -10,6 +10,12 @@ This folder contains the TTS workflow, generated transcripts, and generated MP3s
 - `month-01` through `month-12` already have generated audio
 - generated MP3s are currently tracked in this repo
 
+> **Note:** The existing transcripts and MP3s were generated from the previous
+> month/day-based edition of the curriculum. The text has since been
+> restructured into modules (`01-*.md` … `12-*.md`, same subjects and order).
+> Audio content is still substantively accurate, but the next generation pass
+> should use the new module files listed below.
+
 ## Voice Settings
 
 | Setting | Value |
@@ -48,18 +54,19 @@ The dictionary is intentionally case-sensitive. Put longer/compound terms before
 The curriculum currently lives at repo root:
 
 - `README.md`
-- `month-01-foundations-of-ai.md`
-- `month-02-the-transformer-era.md`
-- `month-03-tokens-and-embeddings.md`
-- `month-04-training-llms.md`
-- `month-05-finetuning-and-alignment.md`
-- `month-06-hardware-and-compute.md`
-- `month-07-quantization.md`
-- `month-08-inference-engines.md`
-- `month-09-throughput-optimization.md`
-- `month-10-distributed-training.md`
-- `month-11-serving-and-autoscaling.md`
-- `month-12-ecosystem-and-future.md`
+- `01-foundations-of-ai.md`
+- `02-the-transformer-era.md`
+- `03-tokens-and-embeddings.md`
+- `04-training-llms.md`
+- `05-finetuning-and-alignment.md`
+- `06-hardware-and-compute.md`
+- `07-quantization.md`
+- `08-inference-engines.md`
+- `09-throughput-optimization.md`
+- `10-distributed-training.md`
+- `11-serving-and-autoscaling.md`
+- `12-ecosystem-and-future.md`
+- `GLOSSARY.md` (A-to-Z index) is reference-only — skip for audio.
 - `parsed-links-for-input.md` should stay reference-only unless Jeremy wants a source-notes audio appendix.
 
 ## Output Layout
