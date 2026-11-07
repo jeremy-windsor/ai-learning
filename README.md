@@ -23,8 +23,8 @@ This is not a timeline. There are no "months" or "days." It's a **mastery ladder
 
 | Module | Mastery | Subject | Deep Dive |
 |--------|---------|---------|-----------|
-| [01](./01-foundations-of-ai.md) | 0% → 8% | Foundations of AI | Symbolic AI → Machine Learning → Deep Learning |
-| [02](./02-the-transformer-era.md) | 8% → 17% | The Transformer Era | Attention, Transformers, BERT vs GPT |
+| [01](./01-foundations-of-ai.md) | 0% → 8% | Foundations of AI | Symbolic AI → ML → vectors → neural networks → deep learning |
+| [02](./02-the-transformer-era.md) | 8% → 17% | The Transformer Era | Attention, the transformer block, GPT vs BERT, MoE, model families |
 | [03](./03-tokens-and-embeddings.md) | 17% → 25% | Tokens & Embeddings | Tokenizers, vocab, context windows, sampling |
 | [04](./04-training-llms.md) | 25% → 33% | Training LLMs | Pretraining, datasets, loss, scaling laws |
 | [05](./05-finetuning-and-alignment.md) | 33% → 42% | Fine-Tuning & Alignment | SFT, RLHF, DPO, LoRA, QLoRA |
@@ -71,4 +71,4 @@ The [`tts/`](./tts) folder contains an audio edition (one MP3 per module plus an
 
 ---
 
-*Last updated: July 2026*
+*Last updated: November 2026*
