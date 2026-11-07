@@ -212,7 +212,7 @@ Released March 2023. Much stronger at reasoning and coding, and it could accept 
 ### §2.27 — Reasoning Models (2024–)
 OpenAI's **o1** (September 2024) introduced a new axis of scaling. Before answering, the model writes a long internal **chain of thought**, working the problem step by step, checking itself, and backtracking. It's trained with reinforcement learning to make that thinking actually useful. Spending more compute *at answer time* is called **test-time compute**: harder problems get more thinking tokens.
 
-DeepSeek-R1 (January 2025) showed the recipe in an open-weight model, and "thinking" modes quickly spread to Claude, Gemini, Qwen, and others. The architecture is the same transformer. What changed is the training (§5.14, §12.20).
+DeepSeek-R1 (January 2025) showed the recipe in an open-weight model, and "thinking" modes quickly spread to Claude, Gemini, Qwen, and others. The architecture is the same transformer. What changed is the training (§5.14, §12.26).
 
 ---
 
@@ -229,22 +229,22 @@ DeepSeek-R1 (January 2025) showed the recipe in an open-weight model, and "think
 | **Pros** | Runs locally, private, no per-token fees, can be fine-tuned | Usually the most capable; no hardware to buy |
 | **Cons** | You supply the GPU or VRAM; often a step behind the frontier | Data leaves your network; pricing and models can change under you |
 
-Module 12 covers the current state of each lab (§12.1–§12.9). The sections below give the origin story of each.
+Module 12 covers the current state of each lab (§12.2–§12.10). The sections below give the origin story of each.
 
 ### §2.29 — Meta's Llama
-Meta released **LLaMA** (7B–65B) in February 2023 for researchers only. Within about a week the weights leaked publicly, and the open-model ecosystem exploded. **Llama 2** (July 2023) was officially open-weight with a commercial license. **Llama 3** (2024) and **Llama 4** (2025, Meta's first MoE models) followed. Llama's architecture became the template many others copied (§12.5).
+Meta released **LLaMA** (7B–65B) in February 2023 for researchers only. Within about a week the weights leaked publicly, and the open-model ecosystem exploded. **Llama 2** (July 2023) was officially open-weight with a commercial license. **Llama 3** (2024) and **Llama 4** (2025, Meta's first MoE models) followed. Llama's architecture became the template many others copied (§12.6).
 
 ### §2.30 — Mistral
 A Paris startup founded in 2023. **Mistral 7B** (September 2023) beat much larger models and shipped under a permissive Apache 2.0 license. **Mixtral 8x7B** (December 2023) brought **Mixture-of-Experts** to open weights (§2.36).
 
 ### §2.31 — Alibaba's Qwen
-Qwen (通义千问) is Alibaba's open model family. Qwen2.5 (2024) and Qwen3 (2025) are highly competitive, strong at coding, multilingual (especially Chinese), and released in sizes from under 1B to hundreds of billions of parameters, both dense and MoE. Qwen3 can switch between thinking and non-thinking modes (§2.27). Qwen models are among the most popular bases for community fine-tunes. When you `ollama pull qwen3`, you're downloading these weights (§12.6).
+Qwen (通义千问) is Alibaba's open model family. Qwen2.5 (2024) and Qwen3 (2025) are highly competitive, strong at coding, multilingual (especially Chinese), and released in sizes from under 1B to hundreds of billions of parameters, both dense and MoE. Qwen3 can switch between thinking and non-thinking modes (§2.27). Qwen models are among the most popular bases for community fine-tunes. When you `ollama pull qwen3`, you're downloading these weights (§12.7).
 
 ### §2.32 — DeepSeek
-A Chinese lab that shocked the industry with **DeepSeek-V3** (December 2024: a 671B-parameter MoE that uses only 37B per token) and **DeepSeek-R1** (January 2025, the reasoning model from §2.27). Both were open-weight and near frontier quality. The widely quoted ~$5.6M training cost covers only the GPU time of the final training run, not research, failed experiments, or hardware, so the true cost was much higher. Even so, it was far cheaper than people assumed frontier models required, and it rattled markets (§12.7).
+A Chinese lab that shocked the industry with **DeepSeek-V3** (December 2024: a 671B-parameter MoE that uses only 37B per token) and **DeepSeek-R1** (January 2025, the reasoning model from §2.27). Both were open-weight and near frontier quality. The widely quoted ~$5.6M training cost covers only the GPU time of the final training run, not research, failed experiments, or hardware, so the true cost was much higher. Even so, it was far cheaper than people assumed frontier models required, and it rattled markets (§12.8).
 
 ### §2.33 — Anthropic's Claude
-Anthropic was founded in 2021 by former OpenAI researchers, and the first Claude was released in March 2023. Claude is closed-weight and API-only. Anthropic pioneered **Constitutional AI** (training against a written set of principles, §5.12) and created **MCP** (Model Context Protocol, November 2024), now a widely used standard for connecting models to tools and data (§12.18). The architecture isn't published.
+Anthropic was founded in 2021 by former OpenAI researchers, and the first Claude was released in March 2023. Claude is closed-weight and API-only. Anthropic pioneered **Constitutional AI** (training against a written set of principles, §5.12) and created **MCP** (Model Context Protocol, November 2024), now a widely used standard for connecting models to tools and data (§12.23). The architecture isn't published.
 
 ### §2.34 — Google's Gemini
 Google's flagship (December 2023), built after Google Brain and DeepMind merged. Trained from the start on text, images, audio, and video (**natively multimodal**), with very long context (Gemini 1.5 offered 1M tokens in 2024). Google also releases smaller open-weight models called **Gemma**.
@@ -273,16 +273,16 @@ That gives two different size numbers:
 | DeepSeek-V3 | 671B | 37B |
 | Qwen3-235B-A22B | 235B | 22B (the "A22B" in the name) |
 
-**Pros:** much more knowledge for the same compute per token, so a big model runs at roughly the speed of a small one. **Cons:** you still need memory for *all* the experts, and balancing the router during training is tricky. That's why local engines often keep some experts in system RAM instead of VRAM, and why big MoE models get spread across GPUs by expert (§9.23).
+**Pros:** much more knowledge for the same compute per token, so a big model runs at roughly the speed of a small one. **Cons:** you still need memory for *all* the experts, and balancing the router during training is tricky. That's why local engines often keep some experts in system RAM instead of VRAM, and why big MoE models get spread across GPUs by expert (§9.31).
 
 ### §2.37 — Grouped-Query Attention (GQA)
-First, the **KV cache**: while generating, the model saves every previous token's Key and Value vectors so it doesn't recompute them for each new token. That cache grows with context length and quickly becomes a major memory cost (§9.1).
+First, the **KV cache**: while generating, the model saves every previous token's Key and Value vectors so it doesn't recompute them for each new token. That cache grows with context length and quickly becomes a major memory cost (§9.5).
 
 **GQA** shrinks it. Instead of every attention head having its own K and V, groups of query heads *share* one K/V pair. Llama 3 8B has 32 query heads but only 8 K/V heads, so the KV cache is 4× smaller with almost no quality loss.
 - **MQA (Multi-Query Attention):** the extreme version, where all heads share a single K/V. Smallest cache, more quality risk.
 - **MLA (Multi-head Latent Attention):** DeepSeek's alternative that compresses K/V into a small vector.
 
-More detail: §9.3.
+More detail: §9.8.
 
 ### §2.38 — The Bitter Lesson
 Rich Sutton's 2019 essay *The Bitter Lesson*: "The biggest lesson that can be read from 70 years of AI research is that general methods that leverage computation are ultimately the most effective, and by a large margin." Translation: hand-built cleverness keeps losing to simple methods plus more data and compute. The transformer, a simple, highly parallel design fed with internet-scale data on huge GPU clusters, is the clearest proof so far (§4.23).

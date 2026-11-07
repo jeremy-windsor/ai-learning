@@ -28,15 +28,15 @@ This is not a timeline. There are no "months" or "days." It's a **mastery ladder
 | [03](./03-tokens-and-embeddings.md) | 17% → 25% | Tokens & Embeddings | BPE tokenizers, embeddings & vector search, context windows, sampling |
 | [04](./04-training-llms.md) | 25% → 33% | Training LLMs | Pretraining objective, data pipelines, compute & cost, scaling laws |
 | [05](./05-finetuning-and-alignment.md) | 33% → 42% | Fine-Tuning & Alignment | SFT, RLHF/DPO/GRPO, LoRA/QLoRA, fine-tune vs RAG |
-| [06](./06-hardware-and-compute.md) | 42% → 50% | Hardware & Compute | CPU vs GPU vs TPU, VRAM, FLOPS, CUDA |
-| [07](./07-quantization.md) | 50% → 58% | Quantization | FP16/BF16/INT8/INT4, GGUF, GPTQ, AWQ |
-| [08](./08-inference-engines.md) | 58% → 67% | Inference Engines | llama.cpp, Ollama, vLLM, TensorRT-LLM, TGI, SGLang |
-| [09](./09-throughput-optimization.md) | 67% → 75% | Throughput Optimization | KV cache, PagedAttention, FlashAttention, speculative decoding |
-| [10](./10-distributed-training.md) | 75% → 83% | Distributed Training | DDP, FSDP, DeepSpeed/ZeRO, tensor & pipeline parallelism |
-| [11](./11-serving-and-autoscaling.md) | 83% → 92% | Serving & Autoscaling | Triton, Ray Serve, latency vs throughput, prompt caching |
-| [12](./12-ecosystem-and-future.md) | 92% → 100% | Ecosystem & Future | OpenAI, Ollama, Qwen/Llama/Mistral/DeepSeek, RAG, agents, MCP |
+| [06](./06-hardware-and-compute.md) | 42% → 50% | Hardware & Compute | GPU anatomy, VRAM & bandwidth math, roofline, interconnects, CUDA |
+| [07](./07-quantization.md) | 50% → 58% | Quantization | Number formats, scales & outliers, GGUF/k-quants/i-quants, GPTQ, AWQ |
+| [08](./08-inference-engines.md) | 58% → 67% | Inference Engines | Life of a request, llama.cpp/Ollama, vLLM, SGLang, TensorRT-LLM, choosing one |
+| [09](./09-throughput-optimization.md) | 67% → 75% | Throughput Optimization | Bandwidth-bound decode, KV cache, FlashAttention, speculative decoding, batching |
+| [10](./10-distributed-training.md) | 75% → 83% | Distributed Training | Collectives & fabrics, DDP, ZeRO/FSDP, tensor/pipeline/expert parallelism |
+| [11](./11-serving-and-autoscaling.md) | 83% → 92% | Serving & Autoscaling | SLOs & percentiles, queueing, load balancing, autoscaling, cost |
+| [12](./12-ecosystem-and-future.md) | 92% → 100% | Ecosystem & Future | Choosing models, RAG, tools & agents, MCP, trends, capstone explanations |
 
-**Cross-reference notation:** `§8.13` means Module 08, section 13. `Module 09` means the whole module.
+**Cross-reference notation:** `§8.18` means Module 08, section 18 (PagedAttention). `Module 09` means the whole module.
 
 ---
 

@@ -95,7 +95,7 @@ Mid-sentence, the whole word is *one* ID, a single number with no letters visibl
 
 ### §3.11 — Numbers, Code, and Other Languages
 Tokenization explains several famous LLM quirks:
-- **Numbers get chopped oddly.** `12345678` becomes `123` · `456` · `78`, so digits don't line up by place value. That's one reason plain LLMs are shaky at arithmetic, and why tool use (a calculator or code) helps (§12.16).
+- **Numbers get chopped oddly.** `12345678` becomes `123` · `456` · `78`, so digits don't line up by place value. That's one reason plain LLMs are shaky at arithmetic, and why tool use (a calculator or code) helps (§12.21).
 - **Non-English text often costs more tokens.** In `cl100k_base`, the Chinese word 路由器 ("router") is three tokens, one per character. In older tokenizers, many languages took 2–4× more tokens than English for the same meaning, so they were slower and more expensive.
 - **Code is full of odd pieces.** `def add(a, b): return a + b` is 10 tokens, including pieces like `(a` and `):`.
 - **Glitch tokens.** In 2023 people found that GPT-3 behaved bizarrely on the token `" SolidGoldMagikarp"`. It was in the vocabulary (it was a common Reddit username in the tokenizer's training text) but almost never appeared in the model's training data, so its embedding was never properly learned.
@@ -144,7 +144,7 @@ How they work:
 Practical facts:
 - **Sizes vary:** 384 numbers (MiniLM), 768 (nomic), 1,536 or 3,072 (OpenAI). Some models let you cut vectors shorter with only a small quality loss (**Matryoshka embeddings**).
 - **Never mix models.** Vectors from two different embedding models live in unrelated spaces, so comparing them is meaningless. If you switch models, re-embed everything.
-- This kind of model encodes both sides separately (a **bi-encoder**), which is fast. A **reranker** (cross-encoder) reads query and document *together* for a more accurate score, and is often used as a second pass on the top results (§12.13).
+- This kind of model encodes both sides separately (a **bi-encoder**), which is fast. A **reranker** (cross-encoder) reads query and document *together* for a more accurate score, and is often used as a second pass on the top results (§12.16).
 
 ### §3.19 — Cosine Similarity in Practice
 You learned the formula in §1.23. What changes in real systems:
@@ -162,7 +162,7 @@ Trade-offs and features to know:
 - **Metadata filters:** "only search documents from the network team, newer than 2025."
 - **Hybrid search:** combine vector similarity with classic keyword search (BM25), so exact terms like an error code or `EXSTART` still match.
 
-This is the retrieval engine under every RAG system (§12.12–§12.14).
+This is the retrieval engine under every RAG system (§12.15–§12.18).
 
 ---
 
@@ -210,12 +210,12 @@ Attention scores every token against every other token. With `n` tokens that's `
 | 10,000 tokens | 100 million |
 | 100,000 tokens | 10 billion |
 
-So 100× more context means 10,000× more attention work. That's the fundamental wall, and most long-context engineering works around it. FlashAttention (§9.9) makes the work cheaper without changing the result. Sliding-window attention (§9.12) only looks at nearby tokens.
+So 100× more context means 10,000× more attention work. That's the fundamental wall, and most long-context engineering works around it. FlashAttention (§9.15) makes the work cheaper without changing the result. Sliding-window attention (§9.18) only looks at nearby tokens.
 
-There's a second cost: the **KV cache** (§2.37) grows linearly with context, and at long lengths it can take more memory than the model weights (§9.2).
+There's a second cost: the **KV cache** (§2.37) grows linearly with context, and at long lengths it can take more memory than the model weights (§9.6).
 
 ### §3.28 — Advertised vs. Effective Context
-A 1M-token window doesn't mean the model *uses* 1M tokens well. Research found models recall facts at the start and end of a long prompt much better than facts buried in the middle (**"lost in the middle,"** 2023). The popular **needle-in-a-haystack** test (hide one fact in a huge document and ask for it) is easy compared to real tasks that need *combining* many facts spread through the text. Harder benchmarks like RULER show the usable length is often well below the advertised maximum. Practical advice: put the most important material at the start or end, and don't stuff the window just because you can (§12.15).
+A 1M-token window doesn't mean the model *uses* 1M tokens well. Research found models recall facts at the start and end of a long prompt much better than facts buried in the middle (**"lost in the middle,"** 2023). The popular **needle-in-a-haystack** test (hide one fact in a huge document and ask for it) is easy compared to real tasks that need *combining* many facts spread through the text. Harder benchmarks like RULER show the usable length is often well below the advertised maximum. Practical advice: put the most important material at the start or end, and don't stuff the window just because you can (§12.20).
 
 ---
 
@@ -232,9 +232,9 @@ prompt → forward pass → pick token 1 → append it
 
 This splits into two phases with very different performance:
 - **Prefill:** the whole prompt is processed in one parallel pass. It's fast per token and limited by raw GPU compute. This is your wait for the first word, called **time to first token**.
-- **Decode:** each new token needs its own forward pass through *all* the weights. It's slow per token and limited by memory bandwidth (§6.10). This is the "typing speed" you see.
+- **Decode:** each new token needs its own forward pass through *all* the weights. It's slow per token and limited by memory bandwidth (§6.12). This is the "typing speed" you see.
 
-The KV cache (§2.37, §9.1) is what keeps decode from recomputing the whole prompt every step. Module 08 builds on this split (§8.2).
+The KV cache (§2.37, §9.5) is what keeps decode from recomputing the whole prompt every step. Module 08 builds on this split (§8.3).
 
 ### §3.30 — Logits and Softmax (Recap)
 From §2.17: the output head gives one raw score (**logit**) per vocabulary token, about 128,000 numbers for Llama 3. Softmax (§2.5) turns them into probabilities that add up to 1. Everything below is about how you choose one token from that list.
@@ -274,7 +274,7 @@ After truncating, the remaining probabilities are rescaled to add up to 1, and o
 | Top-p / min-p truncation | Cuts off garbage tokens | One more knob to tune |
 
 ### §3.34 — Why "Temperature 0" Isn't Truly Deterministic
-Even with greedy decoding, you can get slightly different answers run to run. GPUs add numbers in parallel, and floating-point addition gives tiny differences depending on order. If two tokens are nearly tied, a difference in the 7th decimal place can flip the choice, and the rest of the response diverges from there. On a server, *which other requests share your batch* can change the math too (§9.20). For reproducibility you need a fixed seed, the same hardware, and ideally batch-invariant kernels.
+Even with greedy decoding, you can get slightly different answers run to run. GPUs add numbers in parallel, and floating-point addition gives tiny differences depending on order. If two tokens are nearly tied, a difference in the 7th decimal place can flip the choice, and the rest of the response diverges from there. On a server, *which other requests share your batch* can change the math too (§9.26). For reproducibility you need a fixed seed, the same hardware, and ideally batch-invariant kernels.
 
 ### §3.35 — Stopping: EOS, Stop Sequences, and Max Tokens
 Generation ends when one of these happens:

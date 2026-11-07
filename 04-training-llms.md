@@ -51,7 +51,7 @@ Lower is better. Perplexity is only comparable between models that use the same 
 
 ### §4.6 — What Pretraining Produces: Knowledge, Cutoffs, and Hallucination
 To predict text well, the model has to squeeze an enormous amount of its training data into its weights: facts, styles, code patterns, relationships between ideas. Three consequences matter every day:
-- **Knowledge cutoff.** The model knows nothing about anything after its training data was collected. That date is its **knowledge cutoff**. Ask about later events and it can only guess, unless you supply the information in the prompt (RAG, web search: §12.12).
+- **Knowledge cutoff.** The model knows nothing about anything after its training data was collected. That date is its **knowledge cutoff**. Ask about later events and it can only guess, unless you supply the information in the prompt (RAG, web search: §12.15).
 - **It's not a database.** Facts aren't stored as rows you can look up. They're smeared across billions of weights as statistical patterns. Frequently repeated facts are reliable; rare ones (a niche RFC number, an obscure person) are fuzzy.
 - **Hallucination.** The model's job is to produce *plausible next tokens*, not *true* ones. When it doesn't know, the most plausible continuation is often a confident, well-formatted, made-up answer: a fake citation, an invented CLI flag. Post-training (Module 05) reduces this and teaches models to say "I don't know," but it's built into how they learn. Treat factual details as claims to verify.
 
@@ -136,10 +136,10 @@ Running a model (inference) needs about **2 bytes per parameter** for BF16 weigh
 | Adam state: momentum + variance | 4 + 4 | AdamW tracks two running averages per weight |
 | **Total** | **16** | |
 
-For a 70B model: `70B × 16 bytes ≈ 1.1 TB`, plus **activations** (the intermediate values saved for backprop, which grow with batch size and sequence length). An H100 has 80 GB, so you need *at least* 14 GPUs just to hold the training state, and in practice far more, joined by very fast links (NVLink, InfiniBand: §6.16–§6.17). That's why pretraining is a big-lab game, and why fine-tuning tricks like LoRA (§5.16) exist for everyone else.
+For a 70B model: `70B × 16 bytes ≈ 1.1 TB`, plus **activations** (the intermediate values saved for backprop, which grow with batch size and sequence length). An H100 has 80 GB, so you need *at least* 14 GPUs just to hold the training state, and in practice far more, joined by very fast links (NVLink, InfiniBand: §6.17–§6.18). That's why pretraining is a big-lab game, and why fine-tuning tricks like LoRA (§5.16) exist for everyone else.
 
 ### §4.18 — Mixed-Precision Training
-Doing the math in 16-bit formats is roughly 2× faster and uses half the memory of 32-bit. But tiny weight updates can get rounded away at low precision. The standard fix is **mixed precision**: compute in **BF16** (§7.4) while keeping an FP32 "master copy" of the weights that receives the updates.
+Doing the math in 16-bit formats is roughly 2× faster and uses half the memory of 32-bit. But tiny weight updates can get rounded away at low precision. The standard fix is **mixed precision**: compute in **BF16** (§7.5) while keeping an FP32 "master copy" of the weights that receives the updates.
 
 The older FP16 format also needed **loss scaling** (multiplying the loss up so small gradients don't round to zero). BF16 has a much wider range, so it usually doesn't. The frontier is moving to **FP8** for much of the math: DeepSeek-V3 was trained largely in FP8. (Quantization for *inference* is a separate, more aggressive game: Module 07.)
 
@@ -178,7 +178,7 @@ Scaling laws are Sutton's Bitter Lesson (§2.38) with numbers attached. The reci
 
 Two newer developments:
 - **The data wall.** High-quality human text is finite, so the "D" in 6ND is getting harder to grow. Answers include synthetic data (§5.29), repeating the best data (§4.12), and multimodal data.
-- **Test-time compute.** Reasoning models (§2.27) open a second scaling axis: instead of only a bigger model, spend more compute *thinking* at answer time. Accuracy on hard problems climbs with thinking length too (§12.27).
+- **Test-time compute.** Reasoning models (§2.27) open a second scaling axis: instead of only a bigger model, spend more compute *thinking* at answer time. Accuracy on hard problems climbs with thinking length too (§12.33).
 
 ---
 
@@ -188,15 +188,15 @@ Two newer developments:
 Training stores **weights + gradients + optimizer state + activations** (§4.17), roughly 8–20× the memory of inference. It also needs constant GPU-to-GPU communication to share gradients. A model you can *run* on 1 GPU may need 16 or more to *train*.
 
 ### §4.25 — Data Parallelism
-The simplest way to scale out: put a full copy of the model on each of N GPUs, give each a different slice of the batch, then **average the gradients** across all GPUs (an "all-reduce," §10.3) so every copy makes the same update. N GPUs ≈ N× the throughput. It only works while the whole training state fits on one GPU (§10.5).
+The simplest way to scale out: put a full copy of the model on each of N GPUs, give each a different slice of the batch, then **average the gradients** across all GPUs (an "all-reduce," §10.4) so every copy makes the same update. N GPUs ≈ N× the throughput. It only works while the whole training state fits on one GPU (§10.7).
 
 ### §4.26 — Splitting the Model Itself
 When the model is too big for one GPU, you split the model:
-- **Pipeline parallelism:** different *layers* on different GPUs, like an assembly line (§10.17).
-- **Tensor parallelism:** each big matrix multiply is split *across* GPUs within a layer (§10.16).
-- **Sharded data parallelism (FSDP / ZeRO):** still data parallel, but each GPU stores only a *slice* of the weights, gradients, and optimizer state, and fetches the rest just in time (§10.9–§10.13).
+- **Pipeline parallelism:** different *layers* on different GPUs, like an assembly line (§10.20).
+- **Tensor parallelism:** each big matrix multiply is split *across* GPUs within a layer (§10.19).
+- **Sharded data parallelism (FSDP / ZeRO):** still data parallel, but each GPU stores only a *slice* of the weights, gradients, and optimizer state, and fetches the rest just in time (§10.11–§10.16).
 
-Frontier runs combine data, tensor, and pipeline parallelism, which is called **3D parallelism** (§10.21) (often with sharding and, for MoE, expert parallelism on top).
+Frontier runs combine data, tensor, and pipeline parallelism, which is called **3D parallelism** (§10.24) (often with sharding and, for MoE, expert parallelism on top).
 
 ### §4.27 — Learning-Rate Schedules: Warm Up, Then Cool Down
 The learning rate (§1.33) isn't fixed during a run:
@@ -214,7 +214,7 @@ Engineers watch the loss curve constantly. It should fall fast at first, then ke
 This is the day-to-day life of a pretraining team.
 
 ### §4.29 — Checkpointing and Restarts
-At 10,000+ GPUs, hardware fails constantly. During Meta's 54-day Llama 3 405B run on 16,384 H100s, there were 419 unexpected interruptions, roughly **one every 3 hours**, mostly GPU and memory faults. So runs save **checkpoints** (a full snapshot of the training state) regularly and automatically restart from the last good one. Fast checkpointing and quick recovery are serious engineering problems at this scale (§10.26).
+At 10,000+ GPUs, hardware fails constantly. During Meta's 54-day Llama 3 405B run on 16,384 H100s, there were 419 unexpected interruptions, roughly **one every 3 hours**, mostly GPU and memory faults. So runs save **checkpoints** (a full snapshot of the training state) regularly and automatically restart from the last good one. Fast checkpointing and quick recovery are serious engineering problems at this scale (§10.31).
 
 ---
 
@@ -230,7 +230,7 @@ When Meta, Alibaba, DeepSeek, or Mistral release weights, they hand the world te
 You pay nothing for open weights, but someone paid for the training. Labs' motives include ecosystem influence (everyone builds on *their* architecture and tools), recruiting talent, undercutting competitors' paid APIs, and national or strategic goals. That competition is a big reason 2024–2026 moved so fast.
 
 ### §4.33 — The Compute Concentration
-Only about a dozen organizations can credibly pretrain a frontier model in 2026: OpenAI, Anthropic, Google, Meta, xAI, Microsoft, Alibaba, DeepSeek, Mistral, and a few others. The barrier is the combination of capital (billions in GPUs), scarce chips, power and datacenter capacity, data pipelines, and experienced people. It's one of the most concentrated technologies in the world (§12.29).
+Only about a dozen organizations can credibly pretrain a frontier model in 2026: OpenAI, Anthropic, Google, Meta, xAI, Microsoft, Alibaba, DeepSeek, Mistral, and a few others. The barrier is the combination of capital (billions in GPUs), scarce chips, power and datacenter capacity, data pipelines, and experienced people. It's one of the most concentrated technologies in the world (§12.35).
 
 ### 🛠️ Build It — Hands-On Lab
 **Lab 1: pretraining in miniature.** A "language model" that predicts the next *character* from just the one before it (a **bigram model**). Training is just counting. Pure Python.

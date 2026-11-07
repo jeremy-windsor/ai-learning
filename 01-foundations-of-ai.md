@@ -215,7 +215,7 @@ A toy example with made-up 3-D "word vectors" (you'll compute these yourself in 
 | cat vs truck `[0.1, 0.1, 0.9]` | 0.24 |
 | dog vs truck | 0.31 |
 
-This one formula powers "find similar documents," "customers who bought this also bought," duplicate detection, and the retrieval step of every RAG system (§3.19, §12.12). It works the same in 4,096 dimensions as in 3.
+This one formula powers "find similar documents," "customers who bought this also bought," duplicate detection, and the retrieval step of every RAG system (§3.19, §12.15). It works the same in 4,096 dimensions as in 3.
 
 ### §1.24 — Matrices: Many Vectors at Once
 A **matrix** is a grid of numbers: rows and columns. You can think of it as a stack of vectors.
@@ -438,7 +438,7 @@ Also note: the individual dimensions usually don't mean anything a human can nam
 Embeddings didn't go away when LLMs arrived. They became *more* central:
 - **Inside every LLM:** the first thing an LLM does is look up an embedding vector for each token (§3.14). Every layer after that reads and writes vectors.
 - **Semantic search:** turn every document and every question into an embedding, then return the documents with the highest cosine similarity. It finds "router won't form an adjacency" when you searched "OSPF neighbor stuck in EXSTART," even with no shared keywords.
-- **RAG (Retrieval-Augmented Generation):** semantic search finds relevant documents and hands them to an LLM to answer from (§12.12). Stored in **vector databases** like pgvector, Qdrant, or Milvus (§3.20).
+- **RAG (Retrieval-Augmented Generation):** semantic search finds relevant documents and hands them to an LLM to answer from (§12.15). Stored in **vector databases** like pgvector, Qdrant, or Milvus (§3.20).
 - **Recommendations, deduplication, clustering, anomaly detection:** all "embed things, then compare vectors."
 
 One big limitation of word2vec: each word gets *one* vector, so "bank" (river) and "bank" (money) share a vector. Modern models fix this with **contextual embeddings**: the vector for a word changes depending on the sentence around it. That's exactly what transformers do (Module 02).
