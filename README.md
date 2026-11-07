@@ -25,9 +25,9 @@ This is not a timeline. There are no "months" or "days." It's a **mastery ladder
 |--------|---------|---------|-----------|
 | [01](./01-foundations-of-ai.md) | 0% → 8% | Foundations of AI | Symbolic AI → ML → vectors → neural networks → deep learning |
 | [02](./02-the-transformer-era.md) | 8% → 17% | The Transformer Era | Attention, the transformer block, GPT vs BERT, MoE, model families |
-| [03](./03-tokens-and-embeddings.md) | 17% → 25% | Tokens & Embeddings | Tokenizers, vocab, context windows, sampling |
-| [04](./04-training-llms.md) | 25% → 33% | Training LLMs | Pretraining, datasets, loss, scaling laws |
-| [05](./05-finetuning-and-alignment.md) | 33% → 42% | Fine-Tuning & Alignment | SFT, RLHF, DPO, LoRA, QLoRA |
+| [03](./03-tokens-and-embeddings.md) | 17% → 25% | Tokens & Embeddings | BPE tokenizers, embeddings & vector search, context windows, sampling |
+| [04](./04-training-llms.md) | 25% → 33% | Training LLMs | Pretraining objective, data pipelines, compute & cost, scaling laws |
+| [05](./05-finetuning-and-alignment.md) | 33% → 42% | Fine-Tuning & Alignment | SFT, RLHF/DPO/GRPO, LoRA/QLoRA, fine-tune vs RAG |
 | [06](./06-hardware-and-compute.md) | 42% → 50% | Hardware & Compute | CPU vs GPU vs TPU, VRAM, FLOPS, CUDA |
 | [07](./07-quantization.md) | 50% → 58% | Quantization | FP16/BF16/INT8/INT4, GGUF, GPTQ, AWQ |
 | [08](./08-inference-engines.md) | 58% → 67% | Inference Engines | llama.cpp, Ollama, vLLM, TensorRT-LLM, TGI, SGLang |

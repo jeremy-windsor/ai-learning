@@ -68,8 +68,8 @@ Twice, hype outran reality and funding dried up. Researchers learned a hard less
 
 LLM training uses all three ideas:
 1. **Self-supervised pretraining:** the model reads text and tries to predict the next token. The "label" is simply the real next word in the text, so no human labeling is needed. (Module 04)
-2. **Supervised fine-tuning:** humans write example conversations to teach it to act like an assistant. (§5.3)
-3. **Reinforcement learning from human feedback (RLHF):** humans rate answers and the model is rewarded for the good ones. (§5.6)
+2. **Supervised fine-tuning:** humans write example conversations to teach it to act like an assistant. (§5.4)
+3. **Reinforcement learning from human feedback (RLHF):** humans rate answers and the model is rewarded for the good ones. (§5.7)
 
 ### §1.9 — Checkpoint
 Could you explain to a friend in 60 seconds why AI shifted from writing rules to learning from data? If yes, move on.
@@ -215,7 +215,7 @@ A toy example with made-up 3-D "word vectors" (you'll compute these yourself in 
 | cat vs truck `[0.1, 0.1, 0.9]` | 0.24 |
 | dog vs truck | 0.31 |
 
-This one formula powers "find similar documents," "customers who bought this also bought," duplicate detection, and the retrieval step of every RAG system (§3.16, §12.12). It works the same in 4,096 dimensions as in 3.
+This one formula powers "find similar documents," "customers who bought this also bought," duplicate detection, and the retrieval step of every RAG system (§3.19, §12.12). It works the same in 4,096 dimensions as in 3.
 
 ### §1.24 — Matrices: Many Vectors at Once
 A **matrix** is a grid of numbers: rows and columns. You can think of it as a stack of vectors.
@@ -436,9 +436,9 @@ Also note: the individual dimensions usually don't mean anything a human can nam
 
 ### §1.44 — Why Vectors Still Matter Today
 Embeddings didn't go away when LLMs arrived. They became *more* central:
-- **Inside every LLM:** the first thing an LLM does is look up an embedding vector for each token (§3.11). Every layer after that reads and writes vectors.
+- **Inside every LLM:** the first thing an LLM does is look up an embedding vector for each token (§3.14). Every layer after that reads and writes vectors.
 - **Semantic search:** turn every document and every question into an embedding, then return the documents with the highest cosine similarity. It finds "router won't form an adjacency" when you searched "OSPF neighbor stuck in EXSTART," even with no shared keywords.
-- **RAG (Retrieval-Augmented Generation):** semantic search finds relevant documents and hands them to an LLM to answer from (§12.12). Stored in **vector databases** like pgvector, Qdrant, or Milvus (§3.17).
+- **RAG (Retrieval-Augmented Generation):** semantic search finds relevant documents and hands them to an LLM to answer from (§12.12). Stored in **vector databases** like pgvector, Qdrant, or Milvus (§3.20).
 - **Recommendations, deduplication, clustering, anomaly detection:** all "embed things, then compare vectors."
 
 One big limitation of word2vec: each word gets *one* vector, so "bank" (river) and "bank" (money) share a vector. Modern models fix this with **contextual embeddings**: the vector for a word changes depending on the sentence around it. That's exactly what transformers do (Module 02).

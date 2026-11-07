@@ -130,7 +130,7 @@ This is closer to running a particle accelerator than typical software work.
 Network errors, GPU memory errors, NaN losses, NCCL hangs, bad nodes. Tools: **PyTorch Distributed Elastic** (auto-restart), **ECMP-aware schedulers**, **silent data corruption (SDC) detectors**. Meta's Llama 3 paper documented 419 hardware interruptions in a 54-day run.
 
 ### §10.27 — Distillation as a Training Strategy
-Once you have a giant trained model, you can train smaller models to mimic it (§5.28). Distillation is now a major part of the pipeline — Llama-3.2 small models, Qwen-2.5 small models, gpt-4o-mini and many others are fundamentally distilled.
+Once you have a giant trained model, you can train smaller models to mimic it (§5.30). Distillation is now a major part of the pipeline — Llama-3.2 small models, Qwen-2.5 small models, gpt-4o-mini and many others are fundamentally distilled.
 
 ### §10.28 — RLHF Training Infrastructure
 RLHF/DPO/RL on reasoning has its own distributed training pain. You may need to keep 4 models live (policy, reference, reward, value), run inference and training in the same loop, and synchronize across thousands of GPUs. Frameworks: **TRL**, **OpenRLHF**, **veRL**, **NeMo-Aligner**.

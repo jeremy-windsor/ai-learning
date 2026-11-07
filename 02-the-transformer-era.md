@@ -47,7 +47,7 @@ scores   [2.0,  1.0,  0.1]
 softmax  [0.66, 0.24, 0.10]   ← adds up to 1.0
 ```
 
-The biggest score wins the largest share, but everyone gets something. Softmax shows up again at the very end of the model, where it turns scores for every possible next token into probabilities (§2.17, §3.26).
+The biggest score wins the largest share, but everyone gets something. Softmax shows up again at the very end of the model, where it turns scores for every possible next token into probabilities (§2.17, §3.30).
 
 ### §2.6 — Queries, Keys, Values (Q, K, V)
 How does a token decide whom to attend to? Each token's embedding is multiplied by three learned matrices, `W_Q`, `W_K`, and `W_V`, to produce three vectors:
@@ -94,7 +94,7 @@ Decoder-only LLMs like GPT and Llama use *only* self-attention.
 ### §2.10 — Causal (Masked) Attention
 When a model learns to *generate* text, the token at position 5 must not peek at tokens 6, 7, 8. Otherwise it would learn to copy the answer instead of predicting it. So before the softmax, every score for a future position is set to `−∞`. Softmax turns `−∞` into exactly 0%.
 
-That makes the model **autoregressive**: each token only sees the past, and text is generated one token at a time, left to right (§3.25). In the lab, compare full and causal attention for the same toy input. "the" can only attend to itself, and "cat" can see "the" and "cat" but not "sat."
+That makes the model **autoregressive**: each token only sees the past, and text is generated one token at a time, left to right (§3.29). In the lab, compare full and causal attention for the same toy input. "the" can only attend to itself, and "cat" can see "the" and "cat" but not "sat."
 
 ---
 
@@ -108,7 +108,7 @@ Before the details, here's the whole napkin drawing for a decoder-only LLM:
      │  tokenizer (Module 03)
      ▼
  3 token IDs (just numbers)
-     │  embedding lookup (§3.11)
+     │  embedding lookup (§3.14)
      ▼
  3 vectors × 4,096 numbers  (+ position info, §2.16)
      │
@@ -125,7 +125,7 @@ Before the details, here's the whole napkin drawing for a decoder-only LLM:
      │  final norm + output head (§2.17)
      ▼
  a score for every token in the vocabulary
-     │  softmax → probabilities → pick one (§3.27)
+     │  softmax → probabilities → pick one (§3.31)
      ▼
  " on"
 ```
@@ -164,16 +164,16 @@ Attention is **order-blind** by default. It compares every token with every othe
 - The original paper added a fixed wave pattern (**sinusoidal encoding**) to each token's embedding.
 - Modern models use **RoPE** (Rotary Position Embedding), which rotates the Q and K vectors by an amount that depends on position. Attention scores then naturally reflect how far apart two tokens are. RoPE handles long context better.
 
-Module 03 covers the options in detail (§3.18–§3.22).
+Module 03 covers the options in detail (§3.21–§3.25).
 
 ### §2.17 — The Output Head: From Vector Back to a Word
 After the last block, the model needs to turn the final vector of the *last* token into a prediction:
 1. A final normalization.
 2. Multiply by the **output matrix** (also called the **unembedding** or **LM head**), of size `vocab_size × 4,096`. That produces one raw score per vocabulary token: about 128,000 scores for Llama 3. These scores are called **logits**.
 3. Softmax (§2.5) turns them into probabilities: " on" 62%, " down" 21%, " quietly" 3%...
-4. A sampling rule picks one (§3.27).
+4. A sampling rule picks one (§3.31).
 
-Some models reuse the input embedding table as this output matrix ("tied embeddings," §3.14).
+Some models reuse the input embedding table as this output matrix ("tied embeddings," §3.17).
 
 ### §2.18 — Encoder, Decoder, Encoder-Decoder
 The 2017 transformer had two halves. Three families grew out of it:
@@ -192,19 +192,19 @@ Decoder-only models trained on next-token prediction over internet-scale text tu
 117M parameters. OpenAI's first GPT ("Generative Pre-trained Transformer") paper: **pretrain** a decoder on thousands of books with next-token prediction, then **fine-tune** it on each specific task. The results were modest, but the **recipe** was set: general pretraining first, specialization second.
 
 ### §2.21 — BERT (2018)
-Google's encoder-only model (110M and 340M parameters). Trained with **masked language modeling**: hide ~15% of the words and predict them using context from *both* sides. It crushed nearly every language benchmark and has powered parts of Google Search since 2019. BERT-style models are still widely used for embeddings and classification (§3.15).
+Google's encoder-only model (110M and 340M parameters). Trained with **masked language modeling**: hide ~15% of the words and predict them using context from *both* sides. It crushed nearly every language benchmark and has powered parts of Google Search since 2019. BERT-style models are still widely used for embeddings and classification (§3.18).
 
 ### §2.22 — GPT-2 (2019)
 1.5B parameters, about 10× GPT-1. OpenAI at first held back the full model, citing misuse risk. Coherent multi-paragraph text was new and unsettling. It released it in stages over 2019. GPT-2 was the first strong hint that **scale alone** produces new abilities.
 
 ### §2.23 — GPT-3 (2020): The "It's Real" Moment
-175B parameters, about 100× GPT-2. The headline finding was **in-context learning** (also called **few-shot learning**): put three examples of a task in the prompt and the model picks up the pattern and continues it, with no fine-tuning and no weight changes. One general model could now be steered with text alone. This is when the field, and Silicon Valley, woke up. Module 04 covers the **scaling laws** that predicted this (§4.16).
+175B parameters, about 100× GPT-2. The headline finding was **in-context learning** (also called **few-shot learning**): put three examples of a task in the prompt and the model picks up the pattern and continues it, with no fine-tuning and no weight changes. One general model could now be steered with text alone. This is when the field, and Silicon Valley, woke up. Module 04 covers the **scaling laws** that predicted this (§4.19).
 
 ### §2.24 — Emergent Abilities
 As models grow, some abilities seem to appear suddenly: multi-step arithmetic, following complex instructions, writing working code. Smaller models just can't do them. This is debated. A 2023 paper argued the "suddenness" is partly an artifact of all-or-nothing scoring, and that skills improve smoothly under the hood. Either way, bigger models kept surprising people, and that reshaped the field's expectations.
 
 ### §2.25 — InstructGPT and ChatGPT (2022)
-Raw GPT-3 was a **base model**: it continues text, but doesn't follow instructions. Ask it a question and it might write five more questions. OpenAI's **InstructGPT** (early 2022) fixed that with supervised fine-tuning plus **RLHF**: humans ranked answers, and the model was trained toward the preferred ones (§5.6). ChatGPT, built on GPT-3.5 with the same approach, launched **November 30, 2022**. It reportedly reached 100 million users in about two months and made "LLM" a household word. (Base vs. instruct models: §4.26, §5.1.)
+Raw GPT-3 was a **base model**: it continues text, but doesn't follow instructions. Ask it a question and it might write five more questions. OpenAI's **InstructGPT** (early 2022) fixed that with supervised fine-tuning plus **RLHF**: humans ranked answers, and the model was trained toward the preferred ones (§5.7). ChatGPT, built on GPT-3.5 with the same approach, launched **November 30, 2022**. It reportedly reached 100 million users in about two months and made "LLM" a household word. (Base vs. instruct models: §4.30, §5.1.)
 
 ### §2.26 — GPT-4 (2023) and Multimodality
 Released March 2023. Much stronger at reasoning and coding, and it could accept **images** as well as text (**multimodal**). OpenAI published no architecture details, not even a parameter count. From here on, the leading labs mostly stopped publishing their designs: the **closed-frontier** era.
@@ -212,7 +212,7 @@ Released March 2023. Much stronger at reasoning and coding, and it could accept 
 ### §2.27 — Reasoning Models (2024–)
 OpenAI's **o1** (September 2024) introduced a new axis of scaling. Before answering, the model writes a long internal **chain of thought**, working the problem step by step, checking itself, and backtracking. It's trained with reinforcement learning to make that thinking actually useful. Spending more compute *at answer time* is called **test-time compute**: harder problems get more thinking tokens.
 
-DeepSeek-R1 (January 2025) showed the recipe in an open-weight model, and "thinking" modes quickly spread to Claude, Gemini, Qwen, and others. The architecture is the same transformer. What changed is the training (§5.12, §12.20).
+DeepSeek-R1 (January 2025) showed the recipe in an open-weight model, and "thinking" modes quickly spread to Claude, Gemini, Qwen, and others. The architecture is the same transformer. What changed is the training (§5.14, §12.20).
 
 ---
 
@@ -222,7 +222,7 @@ DeepSeek-R1 (January 2025) showed the recipe in an open-weight model, and "think
 - **Closed (API-only):** you send text to the company's servers and get text back. You never see the weights. Examples: GPT, Claude, Gemini.
 - **Open-weight:** the parameter file (§1.30) is published, so you can download it and run it yourself, for example with `ollama pull`. Examples: Llama, Qwen, Mistral, DeepSeek, Gemma.
 
-"Open-weight" isn't the same as "open source." You usually get the weights but not the training data or full training code, and licenses vary (§5.26).
+"Open-weight" isn't the same as "open source." You usually get the weights but not the training data or full training code, and licenses vary (§5.28).
 
 | | Open-weight | Closed |
 |---|---|---|
@@ -244,7 +244,7 @@ Qwen (通义千问) is Alibaba's open model family. Qwen2.5 (2024) and Qwen3 (20
 A Chinese lab that shocked the industry with **DeepSeek-V3** (December 2024: a 671B-parameter MoE that uses only 37B per token) and **DeepSeek-R1** (January 2025, the reasoning model from §2.27). Both were open-weight and near frontier quality. The widely quoted ~$5.6M training cost covers only the GPU time of the final training run, not research, failed experiments, or hardware, so the true cost was much higher. Even so, it was far cheaper than people assumed frontier models required, and it rattled markets (§12.7).
 
 ### §2.33 — Anthropic's Claude
-Anthropic was founded in 2021 by former OpenAI researchers, and the first Claude was released in March 2023. Claude is closed-weight and API-only. Anthropic pioneered **Constitutional AI** (training against a written set of principles, §5.10) and created **MCP** (Model Context Protocol, November 2024), now a widely used standard for connecting models to tools and data (§12.18). The architecture isn't published.
+Anthropic was founded in 2021 by former OpenAI researchers, and the first Claude was released in March 2023. Claude is closed-weight and API-only. Anthropic pioneered **Constitutional AI** (training against a written set of principles, §5.12) and created **MCP** (Model Context Protocol, November 2024), now a widely used standard for connecting models to tools and data (§12.18). The architecture isn't published.
 
 ### §2.34 — Google's Gemini
 Google's flagship (December 2023), built after Google Brain and DeepMind merged. Trained from the start on text, images, audio, and video (**natively multimodal**), with very long context (Gemini 1.5 offered 1M tokens in 2024). Google also releases smaller open-weight models called **Gemma**.
@@ -285,7 +285,7 @@ First, the **KV cache**: while generating, the model saves every previous token'
 More detail: §9.3.
 
 ### §2.38 — The Bitter Lesson
-Rich Sutton's 2019 essay *The Bitter Lesson*: "The biggest lesson that can be read from 70 years of AI research is that general methods that leverage computation are ultimately the most effective, and by a large margin." Translation: hand-built cleverness keeps losing to simple methods plus more data and compute. The transformer, a simple, highly parallel design fed with internet-scale data on huge GPU clusters, is the clearest proof so far (§4.20).
+Rich Sutton's 2019 essay *The Bitter Lesson*: "The biggest lesson that can be read from 70 years of AI research is that general methods that leverage computation are ultimately the most effective, and by a large margin." Translation: hand-built cleverness keeps losing to simple methods plus more data and compute. The transformer, a simple, highly parallel design fed with internet-scale data on huge GPU clusters, is the clearest proof so far (§4.23).
 
 The counterpoint is worth knowing too. Scale alone isn't the whole story. Data quality, post-training (RLHF, reasoning RL), and efficiency ideas like MoE and GQA are clever engineering, and DeepSeek showed that cleverness can substitute for a lot of money. The fair reading: *general* methods win, and clever work that helps those methods scale wins with them.
 
