@@ -1,6 +1,6 @@
 # Module 06 — Hardware & Compute
 
-**Mastery: 42% → 50%** · Prerequisites: Module 04 (helps to know what training and inference each demand)
+**Mastery: 36% → 43%** · Prerequisites: Module 04 (helps to know what training and inference each demand)
 
 **Goal of this module:** Understand the silicon and memory that AI runs on. By the end you'll know why VRAM is the first thing that limits what you can run, why memory *bandwidth* (not raw FLOPS) usually sets your tokens per second, how to estimate whether a model fits and how fast it can possibly go, how GPUs talk to each other, and what `nvidia-smi` is telling you.
 

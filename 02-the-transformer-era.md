@@ -1,6 +1,6 @@
 # Module 02 — The Transformer Era
 
-**Mastery: 8% → 17%** · Prerequisites: Module 01
+**Mastery: 7% → 14%** · Prerequisites: Module 01
 
 **Goal of this module:** Understand the architecture that powers *every* major LLM (GPT, Claude, Gemini, Llama, Qwen, Mistral, DeepSeek). By the end you'll be able to draw a transformer on a napkin, explain what each piece does, compute attention by hand on a toy example, and place today's model families on a timeline.
 

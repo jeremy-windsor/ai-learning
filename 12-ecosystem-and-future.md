@@ -1,6 +1,6 @@
 # Module 12 — Ecosystem & Future
 
-**Mastery: 92% → 100%** · Prerequisites: everything before it
+**Mastery: 79% → 86%** · Prerequisites: everything before it
 
 **Goal of this module:** Tie everything together. By the end you'll be able to explain, confidently and in plain English, how Ollama, ChatGPT, Qwen, Claude, RAG systems, and AI agents actually work end to end. You'll also be able to pick a model and an architecture for a real project, and judge new announcements on your own.
 
@@ -468,8 +468,8 @@ It takes three steps: look up the interface, compute 93.0%, then answer. Things 
 - **Real tool calling:** send Lab 2's tool schema (§12.21) to a tool-capable model (for example `qwen3`) through Ollama's `/api/chat` `tools` field, and replace `fake_model` with the real response.
 - **An MCP server:** with the official Python SDK (`pip install mcp`), expose `get_interface` as an MCP tool in a few dozen lines and connect it to Claude Desktop or Claude Code.
 
-### 🛠️ Capstone Projects
-Pick one or more. These show up on real AI-engineer job descriptions:
+### 🛠️ Capstone Projects (Previewed Here, Built in Modules 13–14)
+Pick one or more. These show up on real AI-engineer job descriptions. Module 13 covers the engineering you need (APIs from code, structured outputs, evals, shipping), and Module 14 walks the full project ladder step by step:
 1. **Document Q&A bot.** Chunk a folder of PDFs or runbooks (§12.17), embed them (`bge` or `nomic-embed-text`), store them in `pgvector` or Qdrant, and build an API endpoint that retrieves the top 20, reranks to 5, and answers with citations.
 2. **Web research agent.** A tool-calling loop: search → fetch → summarize → decide the next step. Cap the iterations and token budget, and trace every step.
 3. **Multi-agent workflow.** A planner breaks down the task, workers execute, and a critic reviews. Build it with LangGraph, or by hand.
@@ -482,7 +482,7 @@ Pick one or more. These show up on real AI-engineer job descriptions:
 
 ## Chapter 7 — Capstone: Explain It Back
 
-The payoff of the whole course. Say each of these out loud, without notes. Every sentence points to the section that taught it. If any part feels shaky, go back there.
+The payoff of everything you've learned about *how AI works*. Say each of these out loud, without notes. Every sentence points to the section that taught it. If any part feels shaky, go back there.
 
 ### §12.38 — Practice Explanation: "What Even Is an LLM, in 30 Seconds?"
 > "It's a huge neural network (§1.29) trained on one task: given some text, predict the next token (§1.1, §4.1), over trillions of tokens from the internet. Words become vectors (§1.42, §3.14), and stacked attention layers let every token pull in meaning from the ones before it (§2.4–§2.12). Billions of learned weights (§1.30) end up storing a compressed picture of language and the world. Then it's fine-tuned to follow instructions and be helpful (Module 05). It writes one token at a time (§3.29). It feels like reasoning, and on a growing range of tasks it effectively is, but it can also produce confident nonsense, because its job is *plausible* text, not *verified* text (§4.6)."
@@ -523,7 +523,7 @@ The payoff of the whole course. Say each of these out loud, without notes. Every
 10. Private data + untrusted content + a way to send data out. Defend with least privilege, sandboxing/segmentation, human approval for risky actions, and logging, and avoid giving one agent all three.
 </details>
 
-### §12.43 — Final Recap
+### §12.43 — Recap: You Understand the Stack
 You now understand:
 - The 70-year arc from symbolic AI to neural networks, vectors, and attention (Modules 01–02)
 - How models see and produce text: tokens, embeddings, sampling (Module 03)
@@ -534,6 +534,6 @@ You now understand:
 - How real production services are built around all of this (Module 11)
 - Who the players are, how RAG and agents work, and where the field is going (Module 12)
 
-If someone asks you how AI works, at any depth from "explain it to my parents" to "explain it to our CTO," you've got it. **Keep building, keep testing on your own data, and come back to this guide whenever the field invents another acronym.**
+If someone asks you how AI works, at any depth from "explain it to my parents" to "explain it to our CTO," you've got it.
 
-— *End of the curriculum. 100%.*
+Understanding is half the job. The last two modules turn it into building: **Module 13** covers the engineering of LLM applications (calling models from code, structured outputs, testing and evals, shipping a service), and **Module 14** covers agents in practice and maps out your path as an AI engineer.

@@ -1,6 +1,6 @@
 # Module 03 — Tokens & Embeddings
 
-**Mastery: 17% → 25%** · Prerequisites: Module 02
+**Mastery: 14% → 21%** · Prerequisites: Module 02
 
 **Goal of this module:** Understand exactly what an LLM "sees" and how it picks each word it writes. It doesn't see characters or words. It sees **token IDs**, which it turns into **vectors**. By the end you'll know why "how many R's in strawberry?" trips models up, what a context window really is, why pricing is "per token," how embeddings power search, and what temperature and top-p actually do.
 

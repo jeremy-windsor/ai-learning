@@ -1,6 +1,6 @@
 # Module 04 — Training LLMs
 
-**Mastery: 25% → 33%** · Prerequisites: Modules 02–03
+**Mastery: 21% → 29%** · Prerequisites: Modules 02–03
 
 **Goal of this module:** Understand what it actually takes, in data, compute, money, and time, to *create* a foundation model. By the end you'll be able to explain what pretraining does (and why it causes hallucinations and knowledge cutoffs), estimate a training run's cost on the back of an envelope, explain scaling laws, and say why pretraining is reserved for a handful of labs.
 

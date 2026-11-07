@@ -1,6 +1,6 @@
 # Module 09 — Throughput Optimization
 
-**Mastery: 67% → 75%** · Prerequisites: Module 08
+**Mastery: 57% → 64%** · Prerequisites: Module 08
 
 **Goal of this module:** Understand the specific tricks that make modern inference 10–100× faster than a naïve PyTorch loop. By the end you'll be able to explain *why* decode is slow (memory bandwidth, not math), size a KV cache and say how many users fit on a GPU, explain PagedAttention, FlashAttention, speculative decoding, and continuous batching, and read the flags in `vllm serve --help` or an Ollama/llama.cpp config with confidence.
 

@@ -1,6 +1,6 @@
 # Module 01 — Foundations of AI
 
-**Mastery: 0% → 8%** · Prerequisites: none
+**Mastery: 0% → 7%** · Prerequisites: none
 
 **Goal of this module:** Understand the 70-year arc from "AI is hand-written rules" to "AI is a giant statistical pattern-matcher trained on data." By the end you should be able to explain *why* the field moved away from symbolic AI toward neural networks, what a neural network actually *is* (neurons, weights, layers), how one learns, and why **vectors** became the data type everything in modern AI runs on.
 

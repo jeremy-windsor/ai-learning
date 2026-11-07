@@ -6,13 +6,18 @@ Every key term in the curriculum, mapped to the section that teaches it. `§8.18
 - **3D / 4D parallelism** — §4.26, §10.24
 
 ## A
-- **A2A (agent-to-agent protocol)** — §12.23
+- **A2A (Agent2Agent protocol)** — §12.23, §14.26
 - **Acceptance rate (speculative decoding)** — §9.22
 - **Activation checkpointing (recomputation)** — §10.10
 - **Activation functions (ReLU, GELU)** — §1.28
 - **Activation quantization** — §7.24
 - **AdamW optimizer** — §1.33
-- **Agents (LLM in a loop)** — §12.22, §12.24
+- **Agent frameworks (LangGraph, PydanticAI, OpenAI Agents SDK, ADK, CrewAI, AutoGen)** — §14.28–§14.29
+- **Agent graph / state machine (nodes, edges)** — §14.4
+- **Agent memory (short-term, long-term, episodic, semantic, procedural)** — §14.13–§14.17
+- **Agent state** — §14.6
+- **Agents (LLM in a loop)** — §12.22, §12.24, Module 14
+- **AI engineering** — §13.1–§13.3
 - **AI winters** — §1.6
 - **AlexNet (2012)** — §1.38
 - **ALiBi (positional scheme)** — §3.25
@@ -22,6 +27,8 @@ Every key term in the curriculum, mapped to the section that teaches it. `§8.18
 - **Alpha-beta (α-β, latency-bandwidth) cost model** — §10.6
 - **ANN (approximate nearest-neighbor) search** — §3.20
 - **Annealing / mid-training** — §4.11
+- **API error handling (400, 401, 429, 5xx)** — §13.8
+- **API keys and secrets handling** — §13.9
 - **Arithmetic intensity / memory-bound decode** — §9.2
 - **Arithmetic intensity / ridge point** — §6.13
 - **Artificial neuron** — §1.26
@@ -62,6 +69,7 @@ Every key term in the curriculum, mapped to the section that teaches it. `§8.18
 - **Causal (masked) attention** — §2.10
 - **Chain of thought / test-time compute** — §2.27
 - **Chat template** — §5.3
+- **Checkpoint / resume (agents)** — §14.12
 - **Checkpointing and restarts (training)** — §4.29
 - **Chinchilla scaling** — §4.20
 - **Choosing open vs closed models** — §12.11
@@ -70,6 +78,7 @@ Every key term in the curriculum, mapped to the section that teaches it. `§8.18
 - **Circuit breakers / fallbacks / idempotency keys** — §11.26
 - **Claude (Anthropic)** — §2.33, §12.3
 - **CNN (convolutional network)** — §1.39
+- **Compaction (conversation summarization)** — §14.15
 - **Compound AI systems** — §11.29
 - **Compounding errors in agents** — §12.22
 - **Compute-bound vs memory-bandwidth-bound** — §8.3, §8.4
@@ -77,6 +86,8 @@ Every key term in the curriculum, mapped to the section that teaches it. `§8.18
 - **Constitutional AI** — §5.12
 - **Constrained generation (logit masking)** — §8.31
 - **Contamination (benchmark)** — §4.13
+- **Context budget** — §14.14
+- **Context budgeting / cost per request** — §13.15
 - **Context parallelism** — §10.23
 - **Context window** — §3.13, §3.26–§3.28
 - **Contextual embeddings** — §1.44, §2.1, §3.15
@@ -102,12 +113,14 @@ Every key term in the curriculum, mapped to the section that teaches it. `§8.18
 - **DeepSeek** — §2.32, §12.8
 - **DeepSpeed** — §10.26
 - **Dequantization / quantization error** — §7.10
+- **Deterministic shell, probabilistic core** — §14.5
 - **Disaggregated serving** — §8.29, §9.28, §11.18
 - **Distillation (output imitation, logit distillation)** — §5.30, §10.32
 - **DoRA** — §5.20
 - **Dot product** — §1.21
 - **DPO (Direct Preference Optimization)** — §5.10
 - **Dropout** — §1.40
+- **Dry-run / blast radius** — §14.20
 
 ## E
 - **E2E latency** — §9.35
@@ -119,17 +132,22 @@ Every key term in the curriculum, mapped to the section that teaches it. `§8.18
 - **Emergent abilities** — §2.24
 - **Encoder / decoder / encoder-decoder** — §2.18
 - **Epochs in pretraining** — §4.12
+- **Eval-driven development** — §13.26
 - **EXL2 / ExLlamaV2** — §7.20
 - **EXL3** — §7.20
 - **Expert parallelism (MoE)** — §9.31, §10.21
 - **Expert systems (GOFAI)** — §1.5
 
 ## F
+- **Fail closed vs fail open** — §13.20
 - **Faithfulness / groundedness** — §12.19
+- **FastAPI** — §13.29
 - **Feature engineering** — §1.10
 - **Features and labels** — §1.10
 - **Feed-Forward Network (FFN/MLP)** — §2.15
+- **Few-shot examples (in production prompts)** — §13.12
 - **Fine-tuning** — Module 05
+- **finish_reason (stop / length / tool_calls)** — §13.6
 - **FlashAttention** — §9.15
 - **FlashInfer / attention kernel libraries** — §9.17
 - **Floating point (sign / exponent / mantissa)** — §7.2
@@ -145,6 +163,7 @@ Every key term in the curriculum, mapped to the section that teaches it. `§8.18
 - **GGUF format** — §7.17
 - **Glitch tokens (SolidGoldMagikarp)** — §3.11
 - **Global batch / micro-batch** — §10.9
+- **Golden dataset** — §13.23
 - **Goodput** — §9.35
 - **GPT-1/2/3/4 lineage** — §2.20–§2.26
 - **gpt-oss (OpenAI open weights)** — §12.2, §12.34
@@ -155,7 +174,7 @@ Every key term in the curriculum, mapped to the section that teaches it. `§8.18
 - **Gradient descent** — §1.33
 - **GraphRAG / agentic retrieval** — §12.18
 - **GRPO** — §5.14
-- **Guardrails (input/output filters)** — §11.25
+- **Guardrails (input/output filters)** — §11.25, Module 13
 
 ## H
 - **Hallucination** — §4.6
@@ -166,11 +185,13 @@ Every key term in the curriculum, mapped to the section that teaches it. `§8.18
 - **HNSW** — §3.20
 - **HSDP (hybrid sharded data parallel)** — §10.16
 - **Hugging Face Hub** — §12.12
+- **Human-in-the-loop approval** — §14.11
 - **Hybrid search (BM25 + vectors)** — §3.20
 - **HyDE / query rewriting** — §12.18
 - **Hype filter (judging announcements)** — §12.37
 
 ## I
+- **Idempotency / idempotency key** — §14.12
 - **ImageNet** — §1.37
 - **Imatrix quantization** — §7.19
 - **In-context / few-shot learning** — §2.23
@@ -238,6 +259,7 @@ Every key term in the curriculum, mapped to the section that teaches it. `§8.18
 - **Memory bandwidth bottleneck** — §6.12–§6.13
 - **Memory features vs continual learning** — §12.31
 - **Memory hierarchy (SRAM, L2, HBM, DRAM)** — §6.9
+- **Memory poisoning** — §14.17
 - **MFU (model FLOPs utilization)** — §4.15
 - **MIG / MPS / GPU time-slicing** — §11.19
 - **MinHash deduplication** — §4.8
@@ -254,6 +276,7 @@ Every key term in the curriculum, mapped to the section that teaches it. `§8.18
 - **Modelfile (Ollama)** — §8.12
 - **MQA / MHA / MLA** — §2.37, §9.8
 - **MTP (multi-token prediction) / n-gram prompt lookup** — §9.23
+- **Multi-agent patterns (supervisor, pipeline, critic, handoff)** — §14.23–§14.25
 - **Multi-head attention** — §2.8
 - **Multimodal models** — §2.26, §12.27
 - **MXFP4 / NVFP4 (microscaling FP4)** — §7.8
@@ -270,6 +293,7 @@ Every key term in the curriculum, mapped to the section that teaches it. `§8.18
 - **Ollama** — §8.12
 - **Ollama settings (num_ctx, OLLAMA_NUM_PARALLEL, KEEP_ALIVE, KV cache type)** — §8.14
 - **One-hot encoding** — §1.41
+- **Online evaluation / feedback signals / drift** — §13.27
 - **Online softmax / tiling** — §9.15
 - **OpenAI-compatible API standard** — §8.32, §11.2
 - **OpenAI-compatible chat API (stateless)** — §12.14
@@ -290,6 +314,7 @@ Every key term in the curriculum, mapped to the section that teaches it. `§8.18
 - **Pipeline bubble (1F1B, interleaved, DualPipe)** — §10.20
 - **Pipeline bubbles** — §9.30
 - **Pipeline parallelism** — §10.20, §9.30
+- **Planner / executor / verifier** — §14.8
 - **Policy (RL)** — §5.7
 - **Positional encodings (sinusoidal, learned)** — §2.16, §3.21–§3.23
 - **Post-training** — §5.2
@@ -300,9 +325,13 @@ Every key term in the curriculum, mapped to the section that teaches it. `§8.18
 - **Prefill/decode disaggregation** — §9.28
 - **Prefix caching / sharing / copy-on-write** — §8.20, §9.11–§9.12
 - **Pretraining** — §4.1
+- **Project ladder / skills map** — §14.31–§14.32
 - **Prompt** — §2.1
+- **Prompt as contract** — §13.11
 - **Prompt caching (API-level)** — §11.21
 - **Prompt injection** — §5.26
+- **Prompt versioning and templates** — §13.14
+- **Pydantic validation** — §13.19, §13.29
 - **PyTorch / JAX** — §6.24
 
 ## Q
@@ -322,8 +351,11 @@ Every key term in the curriculum, mapped to the section that teaches it. `§8.18
 - **Rate limiting / token bucket / HTTP 429** — §11.20
 - **RDMA / GPUDirect / RoCE** — §10.3
 - **RDMA / RoCE** — §6.18
+- **ReAct (reason + act)** — §14.4
 - **Reasoning models (o1/R1-style)** — §2.27, §5.14, §12.26
 - **Recall@k / MRR (retrieval metrics)** — §12.19
+- **Regression evals in CI** — §13.25
+- **Repair edge** — §14.8, §14.10
 - **Repetition / presence / frequency penalty** — §3.33
 - **Residual connections / residual stream** — §2.13
 - **Reward hacking / sycophancy** — §5.8
@@ -339,11 +371,13 @@ Every key term in the curriculum, mapped to the section that teaches it. `§8.18
 - **RoPE (rotary embeddings)** — §3.24
 - **RoPE scaling / YaRN** — §3.24
 - **Router (MoE)** — §2.36
+- **Router (task routing)** — §14.7
 
 ## S
 - **Sampling (temperature, top-k, top-p, min-p)** — §3.31–§3.33
 - **Scale factor / absmax quantization** — §7.7, §7.10
 - **Scaling laws (Kaplan)** — §4.19
+- **Schema design for LLMs (enums, escape hatch)** — §13.21
 - **Self-attention vs cross-attention** — §2.9
 - **Self-speculative decoding (LayerSkip)** — §9.24
 - **Semantic cache** — §11.30
@@ -367,10 +401,15 @@ Every key term in the curriculum, mapped to the section that teaches it. `§8.18
 - **Special tokens** — §3.12
 - **Speculative decoding** — §8.30, §9.20
 - **Spot / preemptible GPUs** — §11.16
+- **Stateless chat API (resending history)** — §13.5
 - **Static vs continuous batching** — §9.26
 - **Static vs continuous (iteration-level) batching** — §8.19
+- **Stop conditions and budgets (agents)** — §14.9
 - **Stop sequences / max tokens** — §3.35
 - **Streaming / Server-Sent Events (SSE)** — §8.7
+- **Streamlit / Gradio** — §13.33
+- **Structured logging per model call** — §13.31
+- **Structured output (JSON mode, schema-constrained decoding)** — §13.17–§13.18
 - **SVM (support vector machine)** — §1.15
 - **SwiGLU / GELU** — §2.15
 - **Synthetic data** — §5.29
@@ -384,12 +423,15 @@ Every key term in the curriculum, mapped to the section that teaches it. `§8.18
 - **Tensor cores** — §6.5
 - **Tensor parallelism** — §10.19, §9.29
 - **TensorRT-LLM** — §8.25
+- **Test pyramid for LLM apps** — §13.22
 - **TGI (Text Generation Inference)** — §8.26
+- **Thin model wrapper / fake model for tests** — §13.10
 - **Throughput vs latency** — §9.4
 - **Tied vs untied embeddings** — §3.17
 - **Tiktoken** — §3.8
 - **Token (definition)** — §1.1, Module 03
 - **Tokenization** — §3.1–§3.13
+- **Tool design (schemas, descriptions, errors)** — §14.18–§14.19
 - **Tool schema (JSON schema)** — §12.21
 - **Top-k / top-p (nucleus)** — §3.32
 - **torch.compile / XLA** — §6.25
@@ -398,6 +440,7 @@ Every key term in the curriculum, mapped to the section that teaches it. `§8.18
 - **Train / validation / test splits** — §1.17
 - **Training loop** — §1.35
 - **Training memory (16 bytes per parameter)** — §4.17
+- **Trajectory evaluation** — §14.30
 - **Transformer** — §2.2, §2.11–§2.12
 - **Triton Inference Server (NVIDIA)** — §11.3
 - **Triton (OpenAI language)** — §6.26
@@ -407,9 +450,11 @@ Every key term in the curriculum, mapped to the section that teaches it. `§8.18
 - **Unified memory (Apple, Strix Halo, DGX Spark)** — §6.7
 - **Universal approximation theorem** — §1.29
 - **Unsloth / Axolotl (fine-tuning stack)** — §5.23
+- **Untrusted text / delimiters** — §13.13
 - **Utilization and queueing delay** — §11.9
 
 ## V
+- **Validate → repair → fail closed** — §13.20
 - **Vanishing / exploding gradients** — §1.46
 - **Vector databases** — §3.20
 - **Vectors (dimensions, length, distance)** — §1.19–§1.22
@@ -423,6 +468,7 @@ Every key term in the curriculum, mapped to the section that teaches it. `§8.18
 - **Weight-only vs weight+activation quantization** — §7.24
 - **Weights** — §1.11
 - **word2vec / GloVe** — §1.42
+- **Workflow vs agent** — §14.2–§14.3
 
 ## X
 - **xAI / Grok** — §12.5

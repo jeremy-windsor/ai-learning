@@ -1,6 +1,6 @@
 # Module 10 — Distributed Training
 
-**Mastery: 75% → 83%** · Prerequisites: Modules 04, 06
+**Mastery: 64% → 71%** · Prerequisites: Modules 04, 06
 
 **Goal of this module:** Understand how a 70B–600B model is trained across thousands of GPUs without falling over. By the end you'll be able to explain the collective operations (all-reduce and friends) that everything is built on, why a ring all-reduce is bandwidth-optimal, DDP, ZeRO stages and FSDP, tensor/pipeline/expert/context parallelism, and how a real run maps those onto the network's bandwidth tiers. This is the most "networking" module in the course.
 

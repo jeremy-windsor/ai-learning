@@ -1,6 +1,6 @@
 # Module 07 — Quantization
 
-**Mastery: 50% → 58%** · Prerequisites: Module 06
+**Mastery: 43% → 50%** · Prerequisites: Module 06
 
 **Goal of this module:** Understand how a 140 GB model fits onto a 24 GB consumer GPU. By the end you'll be able to read filenames like `qwen3-14b-instruct-Q4_K_M.gguf`, `Llama-3.1-70B-Instruct-AWQ`, or `IQ3_XXS` and know what they mean. You'll also be able to estimate a quantized model's size and speed on the back of an envelope, and choose a quantization for your hardware.
 

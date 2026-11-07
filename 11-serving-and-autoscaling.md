@@ -1,6 +1,6 @@
 # Module 11 — Serving & Autoscaling
 
-**Mastery: 83% → 92%** · Prerequisites: Modules 08–09
+**Mastery: 71% → 79%** · Prerequisites: Modules 08–09
 
 **Goal of this module:** Take a working inference engine and turn it into a reliable, scalable, multi-tenant production service. By the end you'll be able to set latency targets and measure them correctly, explain why a GPU fleet at 90% busy feels broken, size a fleet with Little's Law, decide between self-hosting and an API on real numbers, and draw the architecture of a modern LLM app.
 

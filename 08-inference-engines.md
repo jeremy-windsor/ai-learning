@@ -1,6 +1,6 @@
 # Module 08 — Inference Engines
 
-**Mastery: 58% → 67%** · Prerequisites: Modules 06–07
+**Mastery: 50% → 57%** · Prerequisites: Modules 06–07
 
 **Goal of this module:** Understand the software that actually *runs* a trained model, from `ollama run` on your laptop to `vllm serve` on an 8×H100 server. By the end you'll be able to estimate how fast a model *can* run on given hardware, explain PagedAttention and continuous batching, and recommend the right engine for a deployment.
 

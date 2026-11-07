@@ -1,6 +1,6 @@
 # Module 05 — Fine-Tuning & Alignment
 
-**Mastery: 33% → 42%** · Prerequisites: Module 04
+**Mastery: 29% → 36%** · Prerequisites: Module 04
 
 **Goal of this module:** Understand how a raw base model becomes ChatGPT, Claude, or `qwen3:8b`. By the end you'll know what SFT, RLHF, DPO, GRPO, LoRA, and QLoRA mean, why models hallucinate less but sometimes flatter you, and, most practically, whether *you* should fine-tune at all or just prompt better or add RAG.
 
